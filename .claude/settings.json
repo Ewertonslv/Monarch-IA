@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Users/Ewerton-viggo/Documents/expxagents/node_modules/superpowers/skills/**)",
+      "WebSearch",
+      "Bash(gh api:*)",
+      "Bash(python -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(d['name']\\) for d in data if d['type']=='dir']\")",
+      "WebFetch(domain:github.com)",
+      "Read(//d/Users/Ewerton-viggo/Documents/expxagents/node_modules/**)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(python -m pytest tests/unit/test_web_app.py -v)",
+      "Bash(python -m pytest tests/unit/test_telegram_bot.py -v)",
+      "Bash(python -m pytest tests/integration/test_pipeline_integration.py -v)"
+    ]
+  }
+}

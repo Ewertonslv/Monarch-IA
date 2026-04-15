@@ -38,6 +38,11 @@ class Task:
     review_report: dict[str, Any] | None = None
     security_report: dict[str, Any] | None = None
     deploy_report: dict[str, Any] | None = None
+    core_project_id: str | None = None
+    core_idea_id: str | None = None
+    core_task_id: str | None = None
+    current_core_approval_id: str | None = None
+    core_execution_id: str | None = None
     history: list[HistoryEntry] = field(default_factory=list)
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))

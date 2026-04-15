@@ -79,6 +79,7 @@ async def main() -> None:
         for t in tasks:
             t.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        await orchestrator.aclose()
         await db.close()
         logger.info("Monarch AI stopped.")
 

@@ -1,0 +1,36 @@
+1. Configurar variáveis de ambiente (imediato)
+Criar um arquivo .env na raiz com as credenciais reais:
+
+
+ANTHROPIC_API_KEY=sk-ant-...
+GITHUB_TOKEN=ghp_...
+GITHUB_REPO=owner/seu-repositorio
+TELEGRAM_BOT_TOKEN=123456:ABC...
+TELEGRAM_CHAT_ID=seu_chat_id
+2. Primeiro teste real (próximo)
+Rodar o CLI com uma tarefa simples para validar o pipeline end-to-end com as APIs reais:
+
+
+python -m interfaces.cli run "Create a hello world FastAPI endpoint"
+Isso vai consumir tokens reais de Claude e fazer chamadas ao GitHub — use um repositório de teste.
+
+3. Ajustes que provavelmente surgirão
+Prompts dos agentes — os system prompts são um ponto de partida. Após o primeiro teste real você vai querer refiná-los baseado nas respostas que Claude produz.
+Branch de default — o create_branch usa main como base. Verifique se seu repo usa main ou master.
+PyGithub deprecation — o construtor Github(token) está deprecated. Atualizar para Github(auth=Auth.Token(token)).
+Implementer tools — o agente Implementer expõe as ferramentas do GitHub mas o execute_tool precisa ser validado na prática (o branch é passado como parte do inputs).
+4. Melhorias de produção (médio prazo)
+Item	Descrição
+Approval no Orchestrator	Integrar o send_approval_request do Telegram bot dentro do _request_approval real
+Retry com backoff	O _run_agent já tem retry — validar que funciona bem com rate limits da API
+Logs estruturados	Substituir logging por structlog para logs em JSON
+.env validation	Adicionar python-dotenv para carregar o .env automaticamente
+Deploy	Docker + docker-compose para rodar web + bot juntos
+5. Ordem sugerida
+Criar o .env com credenciais reais
+Criar um repositório GitHub de teste
+Rodar python -m interfaces.cli run "..." com uma tarefa pequena
+Observar onde o pipeline trava ou produz output ruim
+Iterar nos prompts dos agentes com base no comportamento real
+Só então usar no repositório principal
+O risco maior agora é custo de tokens — o Orchestrator roda até 11 chamadas Claude Opus em sequência por task. Recomendo começar com tarefas pequenas para calibrar.
