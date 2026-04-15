@@ -20,6 +20,15 @@ class Config(BaseSettings):
     web_secret_key: str = Field(
         default="change-me-in-production", validation_alias="WEB_SECRET_KEY"
     )
+    monarch_core_api_url: str | None = Field(
+        default=None, validation_alias="MONARCH_CORE_API_URL"
+    )
+    monarch_core_api_key: str | None = Field(
+        default=None, validation_alias="MONARCH_CORE_API_KEY"
+    )
+    monarch_core_project_slug: str = Field(
+        default="monarch-ai", validation_alias="MONARCH_CORE_PROJECT_SLUG"
+    )
 
     # Database
     database_url: str = Field(
