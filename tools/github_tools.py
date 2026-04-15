@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from github import Github, GithubException
+from github import Auth, Github, GithubException
 
 from config import config
 
@@ -12,7 +12,7 @@ class GitHubTools:
     """Wraps PyGithub for common operations used by Monarch AI agents."""
 
     def __init__(self) -> None:
-        self._github = Github(config.github_token)
+        self._github = Github(auth=Auth.Token(config.github_token))
         self._repo = self._github.get_repo(config.github_repo)
 
     # ------------------------------------------------------------------
