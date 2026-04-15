@@ -28,6 +28,9 @@ async def main() -> None:
 
     telegram = TelegramBot(db=db, orchestrator=orchestrator)
 
+    # Wire Telegram bot into Orchestrator so approval gates send notifications
+    orchestrator.set_telegram_bot(telegram)
+
     # Inject shared db + orchestrator into the web app module
     import interfaces.web.app as web_module
     web_module._db = db

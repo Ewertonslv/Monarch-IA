@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Callable, Awaitable
+from typing import TYPE_CHECKING, Any, Callable, Awaitable
 
 from config import config
 from core.circuit_breaker import CircuitBreaker, CircuitBreakerError
@@ -19,7 +19,12 @@ from agents.documentation import DocumentationAgent
 from agents.observability import ObservabilityAgent
 from tools.github_tools import GitHubTools
 
+if TYPE_CHECKING:
+    from interfaces.telegram_bot import TelegramBot
+
 logger = logging.getLogger(__name__)
+
+_APPROVAL_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
 class Orchestrator:
@@ -28,6 +33,11 @@ class Orchestrator:
     def __init__(self, db: Database) -> None:
         self.db = db
         self._breakers: dict[str, CircuitBreaker] = {}
+        self._telegram: "TelegramBot | None" = None
+
+    def set_telegram_bot(self, bot: "TelegramBot") -> None:
+        """Wire the Telegram bot so approval gates can send notifications."""
+        self._telegram = bot
 
     def _breaker(self, name: str) -> CircuitBreaker:
         if name not in self._breakers:
@@ -58,23 +68,37 @@ class Orchestrator:
     # ------------------------------------------------------------------
 
     async def _request_approval(self, task: Task, stage: str) -> bool:
-        """Update task to awaiting_approval and wait for an external signal.
+        """Update task to awaiting_approval, notify via Telegram, then wait.
 
-        In production this is resolved by the Telegram bot / web UI calling
-        `approve_task()` or `reject_task()`.  In tests we resolve immediately.
+        Resolved externally by Telegram inline buttons or web panel buttons
+        calling approve_task() / reject_task(). Times out after 5 minutes.
         """
         task.status = TaskStatus.AWAITING_APPROVAL
         task.add_history(agent="orchestrator", action="awaiting_approval", detail=stage)
         await self.db.update_task(task)
         logger.info("[orchestrator] Task %s awaiting approval at stage: %s", task.task_id, stage)
 
-        # Wait for external resolution (status changes away from AWAITING_APPROVAL)
-        for _ in range(300):  # up to 5 minutes
+        # Send Telegram notification with approve/reject buttons
+        if self._telegram:
+            reqs = task.requirements or {}
+            summary = reqs.get("summary", task.raw_input[:80])
+            try:
+                await self._telegram.send_approval_request(
+                    task_id=task.task_id,
+                    stage=stage,
+                    summary=summary,
+                )
+            except Exception as exc:
+                logger.warning("[orchestrator] Could not send Telegram approval: %s", exc)
+
+        # Poll DB until status changes (resolved by bot/web) or timeout
+        for _ in range(_APPROVAL_TIMEOUT_SECONDS):
             await asyncio.sleep(1)
             fresh = await self.db.get_task(task.task_id)
             if fresh and fresh.status != TaskStatus.AWAITING_APPROVAL:
                 task.status = fresh.status
                 return fresh.status not in (TaskStatus.FAILED, TaskStatus.DISCARDED)
+
         # Timeout — treat as rejected
         task.status = TaskStatus.FAILED
         task.add_history(agent="orchestrator", action="approval_timeout", detail=stage)

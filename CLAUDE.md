@@ -275,7 +275,6 @@ explicitly when the task matches.
 
 ## Known Issues / TODO
 
-- PyGithub deprecation: `Github(token)` should be updated to `Github(auth=Auth.Token(token))`
-- Telegram `send_approval_request` is not yet wired into `Orchestrator._request_approval` — approval gate currently waits for DB status change (works via web panel and Telegram separately)
 - `TestingAgent` class name triggers a pytest collection warning (not a failure)
 - `ImplementerAgent.execute_tool` handles `branch` as a popped key from inputs — validate behavior in real runs
+- Approval timeout is 5 minutes (`_APPROVAL_TIMEOUT_SECONDS = 300`) — ajustar se necessário
