@@ -17,6 +17,7 @@ from agents.reviewer import ReviewerAgent
 from agents.security import SecurityAgent
 from agents.documentation import DocumentationAgent
 from agents.observability import ObservabilityAgent
+from agents.deploy import DeployAgent
 from tools.github_tools import GitHubTools
 
 if TYPE_CHECKING:
@@ -176,6 +177,7 @@ class Orchestrator:
             await self._run_agent("testing", lambda: TestingAgent().run(task))
             await self._run_agent("reviewer", lambda: ReviewerAgent().run(task))
             await self._run_agent("security", lambda: SecurityAgent().run(task))
+            await self._run_agent("deploy", lambda: DeployAgent().run(task))
 
             # Create PR if branch was made and no blocking issues
             security_approved = (task.security_report or {}).get("approved", True)
