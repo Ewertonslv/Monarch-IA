@@ -35,12 +35,13 @@ async def test_orchestrator_runs_full_pipeline(db):
         patch("core.orchestrator.TestingAgent") as TA,
         patch("core.orchestrator.ReviewerAgent") as RA,
         patch("core.orchestrator.SecurityAgent") as SA,
+        patch("core.orchestrator.DeployAgent") as DEPLOY,
         patch("core.orchestrator.DocumentationAgent") as DOC,
         patch("core.orchestrator.ObservabilityAgent") as OBS,
         patch("core.orchestrator.GitHubTools") as GH,
         patch.object(orch, "_request_approval", new=AsyncMock(return_value=True)),
     ):
-        for AgentCls in [DA, PA, AA, PLA, IA, TA, RA, DOC, OBS]:
+        for AgentCls in [DA, PA, AA, PLA, IA, TA, RA, DEPLOY, DOC, OBS]:
             AgentCls.return_value.run = AsyncMock(return_value=_result())
         DVA.return_value.run = AsyncMock(return_value=_result({"approved": True}))
         RA.return_value.run = AsyncMock(return_value=_result({"approved": True, "overall_quality": "good"}))
@@ -70,6 +71,7 @@ async def test_orchestrator_marks_failed_on_agent_error(db):
         patch("core.orchestrator.TestingAgent"),
         patch("core.orchestrator.ReviewerAgent"),
         patch("core.orchestrator.SecurityAgent"),
+        patch("core.orchestrator.DeployAgent"),
         patch("core.orchestrator.DocumentationAgent"),
         patch("core.orchestrator.ObservabilityAgent"),
         patch("core.orchestrator.GitHubTools"),
@@ -95,6 +97,7 @@ async def test_orchestrator_discarded_on_rejection(db):
         patch("core.orchestrator.TestingAgent"),
         patch("core.orchestrator.ReviewerAgent"),
         patch("core.orchestrator.SecurityAgent"),
+        patch("core.orchestrator.DeployAgent"),
         patch("core.orchestrator.DocumentationAgent"),
         patch("core.orchestrator.ObservabilityAgent"),
         patch("core.orchestrator.GitHubTools"),

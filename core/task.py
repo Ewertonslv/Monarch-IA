@@ -37,6 +37,7 @@ class Task:
     test_results: dict[str, Any] | None = None
     review_report: dict[str, Any] | None = None
     security_report: dict[str, Any] | None = None
+    deploy_report: dict[str, Any] | None = None
     history: list[HistoryEntry] = field(default_factory=list)
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
