@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"],
+  "skills": {
+    "paths": [
+      "D:/Users/Ewerton-viggo/Documents/expxagents/node_modules/superpowers/skills",
+      "D:/Users/Ewerton-viggo/Documents/Monarch AI/.skills/superpowers-lab",
+      "D:/Users/Ewerton-viggo/Documents/Monarch AI/.skills/community"
+    ]
+  }
+}
