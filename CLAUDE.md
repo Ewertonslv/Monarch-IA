@@ -217,6 +217,62 @@ Total: 89 tests
 
 ---
 
+## Skills Available
+
+Skills extend Claude Code's capabilities. Invoke with `/skill-name` or reference them
+explicitly when the task matches.
+
+### Core Superpowers (`expxagents/node_modules/superpowers/skills/`)
+
+| Skill | When to use |
+|---|---|
+| `brainstorming` | Exploring new features, architecture decisions, problem-solving |
+| `writing-plans` | Before implementing anything non-trivial — produces a step-by-step plan |
+| `executing-plans` | Working through a written plan task by task |
+| `test-driven-development` | Adding any new agent, tool, or feature (Red → Green → Refactor) |
+| `systematic-debugging` | When a pipeline run fails and the cause isn't obvious |
+| `finishing-a-development-branch` | Before opening a PR — ensures branch is clean and ready |
+| `requesting-code-review` | After implementation, before merging |
+| `receiving-code-review` | Processing review feedback and applying fixes |
+| `dispatching-parallel-agents` | Running multiple independent tasks simultaneously |
+| `subagent-driven-development` | Delegating complex research/implementation to subagents |
+| `using-git-worktrees` | Parallel branches without context switching |
+| `verification-before-completion` | Final check before declaring a task done |
+| `using-superpowers` | Meta-skill: how to use the skills system itself |
+| `writing-skills` | Creating new custom skills for this project |
+
+### Superpowers Lab (`.skills/superpowers-lab/`) — Experimental
+
+| Skill | When to use |
+|---|---|
+| `finding-duplicate-functions` | Before adding new utilities — checks for existing implementations |
+| `mcp-cli` | Interacting with MCP servers from the CLI |
+| `using-tmux-for-interactive-commands` | Running long pipeline processes in background panes |
+
+### Community Custom (`.skills/community/`) — Project-specific
+
+| Skill | When to use |
+|---|---|
+| `security-review` | Before merging any PR that touches agent tools, external API calls, or credential handling. OWASP Top 10 + AI-specific risks |
+| `gh-fix-ci` | When a GitHub Actions CI check fails after the Implementer Agent creates a PR |
+| `github-patterns` | When working with branches/PRs in the multi-agent context |
+
+### Skills Config (`opencode.json`)
+
+```json
+{
+  "skills": {
+    "paths": [
+      "D:/Users/Ewerton-viggo/Documents/expxagents/node_modules/superpowers/skills",
+      "D:/Users/Ewerton-viggo/Documents/Monarch AI/.skills/superpowers-lab",
+      "D:/Users/Ewerton-viggo/Documents/Monarch AI/.skills/community"
+    ]
+  }
+}
+```
+
+---
+
 ## Known Issues / TODO
 
 - PyGithub deprecation: `Github(token)` should be updated to `Github(auth=Auth.Token(token))`
