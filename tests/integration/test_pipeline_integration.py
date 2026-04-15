@@ -36,12 +36,13 @@ _IMPLEMENTER = {"confidence": 0.92, "files_written": [{"path": "src/search.py", 
 _TESTING = {"confidence": 0.99, "all_passed": True, "pytest": {"passed": True, "summary": "1 passed"}, "ruff": {"passed": True, "issue_count": 0}, "mypy": {"passed": True, "summary": "clean"}, "bandit": {"passed": True, "high_severity": 0}, "blocking_issues": [], "recommendations": [], "concerns": []}
 _REVIEWER = {"confidence": 0.88, "approved": True, "overall_quality": "good", "comments": [], "blocking_issues": [], "positive_highlights": [], "concerns": []}
 _SECURITY = {"confidence": 0.90, "approved": True, "risk_level": "low", "vulnerabilities": [], "blocking_vulnerabilities": [], "security_positives": [], "concerns": []}
+_DEPLOY = {"confidence": 0.88, "project_type": "fastapi_api", "deployment_target": "railway", "ci_workflow_path": ".github/workflows/ci.yml", "ci_workflow_content": "name: CI\non: [push]", "files_written": [".github/workflows/ci.yml"], "env_vars_needed": [], "deploy_commands": [], "concerns": []}
 _DOCUMENTATION = {"confidence": 0.85, "changelog_entry": "## Added\n- search", "readme_sections": [], "api_docs": [], "inline_docs": [], "concerns": []}
 _OBSERVABILITY = {"confidence": 0.80, "logging_recommendations": [], "metrics_to_add": [], "alerts_to_configure": [], "tracing_spans": [], "health_check_suggestions": [], "concerns": []}
 
 _AGENT_RESPONSES = [
     _DISCOVERY, _PRIORITIZATION, _ARCHITECTURE, _PLANNING, _DEVILS,
-    _IMPLEMENTER, _TESTING, _REVIEWER, _SECURITY, _DOCUMENTATION, _OBSERVABILITY,
+    _IMPLEMENTER, _TESTING, _REVIEWER, _SECURITY, _DEPLOY, _DOCUMENTATION, _OBSERVABILITY,
 ]
 
 
@@ -71,6 +72,7 @@ async def test_full_pipeline_reaches_done(db):
         patch("agents.implementer.GitHubTools") as MockGH,
         patch("agents.reviewer.GitHubTools"),
         patch("agents.documentation.GitHubTools"),
+        patch("agents.deploy.GitHubTools") as MockGHDeploy,
         patch("agents.testing.CodeTools") as MockCT,
     ):
         mock_client.messages.create = AsyncMock(side_effect=next_msg)
@@ -78,6 +80,8 @@ async def test_full_pipeline_reaches_done(db):
             gh_mock.return_value.as_tools_schema.return_value = []
             gh_mock.return_value.create_branch = MagicMock()
             gh_mock.return_value.create_pr = MagicMock(return_value="https://github.com/o/r/pull/1")
+        MockGHDeploy.return_value.list_files = MagicMock(return_value=["main.py", "pyproject.toml"])
+        MockGHDeploy.return_value.write_file = MagicMock()
         MockCT.return_value.run_all_checks.return_value = {
             "overall_passed": True, "pytest": {"passed": True, "output": ""}, "ruff": {"passed": True, "issues": []}, "mypy": {"passed": True, "output": ""}, "bandit": {"passed": True, "high_severity": 0, "output": ""},
         }
@@ -110,6 +114,7 @@ async def test_pipeline_persists_task_to_db(db):
         patch("agents.implementer.GitHubTools") as MockGH,
         patch("agents.reviewer.GitHubTools"),
         patch("agents.documentation.GitHubTools"),
+        patch("agents.deploy.GitHubTools") as MockGHDeploy,
         patch("agents.testing.CodeTools") as MockCT,
     ):
         mock_client.messages.create = AsyncMock(side_effect=next_msg)
@@ -117,6 +122,8 @@ async def test_pipeline_persists_task_to_db(db):
             gh_mock.return_value.as_tools_schema.return_value = []
             gh_mock.return_value.create_branch = MagicMock()
             gh_mock.return_value.create_pr = MagicMock(return_value="https://github.com/o/r/pull/2")
+        MockGHDeploy.return_value.list_files = MagicMock(return_value=["main.py", "pyproject.toml"])
+        MockGHDeploy.return_value.write_file = MagicMock()
         MockCT.return_value.run_all_checks.return_value = {
             "overall_passed": True, "pytest": {"passed": True, "output": ""}, "ruff": {"passed": True, "issues": []}, "mypy": {"passed": True, "output": ""}, "bandit": {"passed": True, "high_severity": 0, "output": ""},
         }

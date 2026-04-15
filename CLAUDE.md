@@ -65,6 +65,7 @@ agents/
   testing.py               ← Layer 3 — Execution: analyses pytest/ruff/mypy/bandit results
   reviewer.py              ← Layer 3 — Execution: reviews PR diff
   security.py              ← Layer 3 — Execution: OWASP security review
+  deploy.py                ← Layer 3 — Execution: generates CI/CD workflow + deployment config
   documentation.py         ← Layer 4 — Support: generates changelog + docs
   observability.py         ← Layer 4 — Support: recommends metrics + alerts
 tools/
@@ -116,6 +117,8 @@ Task created
     │
 [Security]           → task.security_report
     │
+[Deploy]             → task.deploy_report, writes .github/workflows/ci.yml to branch
+    │
 [create_pr]          → task.pr_url (if review + security approved)
     │
 [APPROVAL GATE 2]    ← Telegram/web: Approve or Reject
@@ -141,6 +144,7 @@ Task DONE
 | Implementer | claude-opus-4-6 | Critical: writes production code |
 | Reviewer | claude-opus-4-6 | Critical: code quality gate |
 | Security | claude-opus-4-6 | Critical: security gate |
+| Deploy | claude-sonnet-4-6 | Standard: CI/CD config generation |
 | Prioritization | claude-sonnet-4-6 | Standard: priority assessment |
 | Testing | claude-sonnet-4-6 | Standard: interprets test output |
 | Documentation | claude-haiku-4-5-20251001 | Mechanical: structured doc generation |
@@ -172,6 +176,7 @@ Key fields on `Task`:
 - `test_results` — set by Testing agent
 - `review_report` — set by Reviewer agent
 - `security_report` — set by Security agent
+- `deploy_report` — set by Deploy agent (project_type, deployment_target, files_written)
 - `history` — list of `HistoryEntry(agent, action, detail, timestamp)`
 
 ---
@@ -192,6 +197,7 @@ tests/
     test_discovery_agent.py          ← DiscoveryAgent (4 tests)
     test_definition_agents.py        ← Prioritization, Architecture, Planning, DA (9 tests)
     test_execution_agents.py         ← Implementer, Testing, Reviewer, Security (9 tests)
+    test_deploy_agent.py             ← DeployAgent: CI workflow generation (5 tests)
     test_support_agents.py           ← Documentation, Observability (6 tests)
     test_circuit_breaker.py          ← CircuitBreaker state machine (6 tests)
     test_orchestrator.py             ← Orchestrator pipeline (3 tests)
@@ -200,7 +206,7 @@ tests/
   integration/
     test_pipeline_integration.py     ← Full 11-agent pipeline, mocked at Claude API (2 tests)
 
-Total: 89 tests
+Total: 94 tests
 ```
 
 ---
