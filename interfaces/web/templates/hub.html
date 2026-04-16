@@ -861,6 +861,27 @@ function summarizeProjectExecution(project, detail = null) {
   };
 }
 
+function renderImplementationSummary(summary) {
+  if (!summary) {
+    return '<div class="detail-empty">Resumo de implementacao local indisponivel.</div>';
+  }
+
+  const labels = (summary.module_labels || [])
+    .map(label => `<span class="health-chip">${escHtml(label)}</span>`)
+    .join('');
+
+  return `
+    <div class="detail-summary">
+      <div><strong>Status local:</strong> ${escHtml(summary.implementation_status || "indefinido")}</div>
+      <div><strong>Caminho canonico:</strong> ${escHtml(summary.canonical_path || "-")}</div>
+      <div><strong>Entrega principal:</strong> ${escHtml(summary.deliverable || "-")}</div>
+      <div><strong>README:</strong> ${summary.readme_present ? "sim" : "nao"} | <strong>Testes:</strong> ${summary.test_suite_present ? "sim" : "nao"} | <strong>Pacote:</strong> ${summary.package_present ? "sim" : "nao"}</div>
+      <div><strong>Modulos mapeados:</strong> ${summary.module_count ?? 0}</div>
+      <div class="project-health">${labels || '<span class="detail-empty">Nenhum modulo listado.</span>'}</div>
+    </div>
+  `;
+}
+
 function renderProjects() {
   const el = document.getElementById("projects");
   if (!projects.length) {
@@ -1190,6 +1211,10 @@ function renderProjectDetail() {
       <div class="detail-panel">
         <h3>Roadmap</h3>
         <div class="detail-list">${renderDetailItems(projectDetail.roadmap_items, item => `<div><strong>${escHtml(item.title)}</strong></div><div>${escHtml(item.phase)} - ${escHtml(item.status)} - ${escHtml(item.priority)}</div><div>${escHtml(item.description || "")}</div>`)}</div>
+      </div>
+      <div class="detail-panel">
+        <h3>Implementacao local</h3>
+        ${renderImplementationSummary(projectDetail.implementation_summary)}
       </div>
       <div class="detail-panel">
         <h3>Tarefas do hub</h3>

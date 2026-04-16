@@ -123,6 +123,45 @@ async def test_hub_business_units_returns_core_payload(client):
 
 
 @pytest.mark.asyncio
+async def test_hub_project_detail_includes_implementation_summary(client):
+    ac, _, _ = client
+
+    async def fake_fetch(path: str):
+        if path == "/api/projects/project-1":
+            return {
+                "id": "project-1",
+                "name": "Instagram Automation",
+                "slug": "instagram-automation",
+                "status": "incubating",
+                "priority": "medium",
+                "stage": "planning",
+            }
+        if path == "/api/projects/project-1/execution-summary":
+            return {"readiness": 52, "stage_label": "Planejamento", "momentum": "Ganhando forma", "roadmap_total": 1, "roadmap_done": 0, "tasks_total": 1, "task_done": 0, "task_active": 0, "task_blocked": 0, "pending_approvals": 0, "failed_executions": 0, "next_checkpoint": "Criar fila de conteudo"}
+        if path == "/api/projects/project-1/implementation-summary":
+            return {
+                "implementation_status": "implementado localmente",
+                "canonical_path": "apps/instagram-automation",
+                "deliverable": "Pesquisa, fila, briefing e checklist de publicacao assistida.",
+                "package_present": True,
+                "readme_present": True,
+                "test_suite_present": True,
+                "module_count": 4,
+                "module_labels": ["research", "queue", "briefing", "publication"],
+            }
+        return []
+
+    with patch("interfaces.web.app._fetch_monarch_core_json", new=AsyncMock(side_effect=fake_fetch)):
+        resp = await ac.get("/hub/projects/project-1")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["project"]["slug"] == "instagram-automation"
+    assert data["implementation_summary"]["canonical_path"] == "apps/instagram-automation"
+    assert data["implementation_summary"]["module_count"] == 4
+
+
+@pytest.mark.asyncio
 async def test_hub_create_business_unit_returns_core_payload(client):
     ac, _, _ = client
     post_mock = AsyncMock(return_value={"id": "bu-1", "name": "Conteudo"})
