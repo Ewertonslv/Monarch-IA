@@ -21,6 +21,17 @@ Levar todos os projetos do Hub a um estado minimo completo, com definicao clara 
 - Cada projeto precisa sair do estado conceitual e chegar a um fluxo operacional minimo.
 - Um projeto nao sera considerado pronto so por ter interface ou repositorio; ele precisa executar seu fluxo principal.
 
+## Status local de implementacao
+
+- Monarch AI: base local fortalecida com roadmap, resumo de execucao e correcoes no fluxo de aprovacao.
+- WhatsApp Notion Bot: protecao contra webhook duplicado adicionada no app canonico.
+- PDF Factory: scaffold local criado com pipeline, modelos e testes.
+- Instagram Automation: scaffold local criado com pesquisa, fila, briefing e checklist de publicacao.
+- Achadinhos: scaffold local criado com catalogo, scoring e shortlist.
+- TikTok Shop: scaffold local criado para converter shortlist em oferta e validacao inicial.
+- Canal Dark: ainda em fase de modelagem.
+- Solo Leveling Lab: ainda em fase de modelagem.
+
 ## Ondas de execucao
 
 ### Onda 1: Fundacao operacional
@@ -128,6 +139,12 @@ Backlog inicial:
 - validar um primeiro produto
 - organizar saidas e metadados
 
+Implementacao local atual:
+
+- pacote canonico criado em `apps/pdf-factory/`
+- pipeline inicial de planejamento e renderizacao em markdown
+- testes locais adicionados
+
 ### 4. Instagram Automation
 
 Objetivo final:
@@ -154,6 +171,13 @@ Backlog inicial:
 - criar fila de conteudo
 - integrar aprovacao
 - preparar etapa de publicacao assistida
+
+Implementacao local atual:
+
+- pacote canonico criado em `apps/instagram-automation/`
+- pipeline de pesquisa para angulos de conteudo
+- fila inicial com status `awaiting_approval`
+- briefing e checklist de publicacao assistida
 
 ### 5. Canal Dark
 
@@ -208,6 +232,13 @@ Backlog inicial:
 - criar ranking inicial
 - gerar shortlist priorizada
 
+Implementacao local atual:
+
+- pacote canonico criado em `apps/achadinhos/`
+- modelos para catalogo e candidatos
+- score local com sinais de margem, apelo visual, novidade e demonstracao
+- shortlist priorizada com renderizacao em markdown
+
 ### 7. TikTok Shop
 
 Objetivo final:
@@ -234,6 +265,13 @@ Backlog inicial:
 - estruturar pagina/oferta/script
 - alinhar conteudo com proposta comercial
 - preparar primeira rodada de validacao
+
+Implementacao local atual:
+
+- pacote canonico criado em `apps/tiktok-shop/`
+- conversao de candidato priorizado em angulo de oferta
+- roteiro curto de video
+- checklist de validacao comercial inicial
 
 ### 8. Solo Leveling Lab
 
