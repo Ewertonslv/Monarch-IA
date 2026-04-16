@@ -161,6 +161,29 @@
     .project-desc { font-size: 0.9rem; color: #e2e8f0; line-height: 1.45; }
     .idea-desc { font-size: 0.88rem; color: #dbe7f7; line-height: 1.45; margin-bottom: 0.8rem; }
     .project-meta { margin-top: 0.45rem; font-size: 0.78rem; color: #7f93b5; display: flex; flex-direction: column; gap: 0.28rem; }
+    .project-health {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
+    }
+    .health-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.32rem 0.62rem;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      color: #dbe7f7;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .health-chip.highlight {
+      background: rgba(247, 198, 93, 0.12);
+      border-color: rgba(247, 198, 93, 0.22);
+      color: #fde7ae;
+    }
     .project-card, .business-unit-card { cursor: pointer; transition: transform 0.18s ease, border-color 0.18s ease; }
     .project-card:hover, .business-unit-card:hover { transform: translateY(-2px); border-color: rgba(248, 214, 109, 0.35); }
     .project-card.active, .business-unit-card.active { border-color: rgba(248, 214, 109, 0.55); box-shadow: 0 0 0 1px rgba(248, 214, 109, 0.18) inset; }
@@ -176,6 +199,36 @@
     .detail-item:last-child { border-bottom: none; padding-bottom: 0; }
     .detail-summary { display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.86rem; color: #d5dfef; }
     .detail-empty { font-size: 0.84rem; color: #7f93b5; }
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.7rem;
+      margin-top: 1rem;
+    }
+    .kpi-card {
+      border-radius: 14px;
+      background: rgba(5, 8, 20, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 0.8rem;
+    }
+    .kpi-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8ea1c2;
+      margin-bottom: 0.35rem;
+    }
+    .kpi-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .kpi-note {
+      margin-top: 0.3rem;
+      font-size: 0.76rem;
+      color: #8ea1c2;
+      line-height: 1.35;
+    }
     .editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin-top: 1rem; }
     .editor-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.78rem; color: #8ea1c2; }
     .editor-grid input, .editor-grid select {
@@ -752,6 +805,58 @@ function renderActivity() {
   `).join('');
 }
 
+function normalizeExecutionStage(stage) {
+  const stages = {
+    discovery: { label: "Descoberta", score: 15 },
+    planning: { label: "Planejamento", score: 35 },
+    building: { label: "Construcao", score: 60 },
+    testing: { label: "Validacao", score: 80 },
+    active: { label: "Operacao", score: 100 }
+  };
+  return stages[stage] || { label: stage || "Indefinido", score: 20 };
+}
+
+function summarizeProjectExecution(project, detail = null) {
+  const stageInfo = normalizeExecutionStage(project.stage);
+  const roadmap = detail?.roadmap_items || [];
+  const tasksList = detail?.tasks || [];
+  const approvalsList = detail?.approvals || [];
+  const executionsList = detail?.executions || [];
+
+  const roadmapDone = roadmap.filter(item => ["done", "completed", "shipped"].includes((item.status || "").toLowerCase())).length;
+  const taskDone = tasksList.filter(item => item.status === "done").length;
+  const taskActive = tasksList.filter(item => item.status === "in_progress").length;
+  const taskBlocked = tasksList.filter(item => item.status === "blocked").length;
+  const pendingApprovals = approvalsList.filter(item => item.status === "pending").length;
+  const failedExecutions = executionsList.filter(item => item.status === "failed").length;
+
+  const completionBase = roadmap.length ? Math.round((roadmapDone / roadmap.length) * 100) : stageInfo.score;
+  const statusBoost = project.status === "active" ? 10 : project.status === "incubating" ? 0 : -5;
+  const riskPenalty = (taskBlocked * 10) + (pendingApprovals * 6) + (failedExecutions * 12);
+  const readiness = Math.max(0, Math.min(100, completionBase + statusBoost - riskPenalty));
+
+  let momentum = "Estruturando";
+  if (readiness >= 85) momentum = "Quase pronto";
+  else if (readiness >= 65) momentum = "Executando";
+  else if (readiness >= 40) momentum = "Ganhando forma";
+
+  const nextRoadmap = roadmap.find(item => !["done", "completed", "shipped"].includes((item.status || "").toLowerCase()));
+
+  return {
+    readiness,
+    stageLabel: stageInfo.label,
+    momentum,
+    roadmapTotal: roadmap.length,
+    roadmapDone,
+    taskDone,
+    taskActive,
+    taskBlocked,
+    pendingApprovals,
+    failedExecutions,
+    nextCheckpoint: nextRoadmap?.title || project.next_action || "Definir proxima entrega"
+  };
+}
+
 function renderProjects() {
   const el = document.getElementById("projects");
   if (!projects.length) {
@@ -775,6 +880,11 @@ function renderProjects() {
         <span>Estagio atual: <b>${escHtml(project.stage)}</b></span>
         ${project.current_focus ? `<span>Foco atual: ${escHtml(project.current_focus)}</span>` : ''}
         ${project.next_action ? `<span>Proxima acao: ${escHtml(project.next_action)}</span>` : ''}
+      </div>
+      <div class="project-health">
+        <span class="health-chip highlight">Prontidao ${summarizeProjectExecution(project).readiness}%</span>
+        <span class="health-chip">${escHtml(summarizeProjectExecution(project).momentum)}</span>
+        <span class="health-chip">${escHtml(summarizeProjectExecution(project).stageLabel)}</span>
       </div>
     </div>
   `).join('');
@@ -991,6 +1101,7 @@ function renderProjectDetail() {
     return;
   }
   const project = projectDetail.project;
+  const summary = summarizeProjectExecution(project, projectDetail);
   el.innerHTML = `
     <div class="detail-panel" style="margin-bottom:1rem;">
       <div class="project-top">
@@ -1008,6 +1119,37 @@ function renderProjectDetail() {
         <span>Estagio: <b>${escHtml(project.stage)}</b></span>
         ${project.current_focus ? `<span>Foco atual: ${escHtml(project.current_focus)}</span>` : ''}
         ${project.next_action ? `<span>Proxima acao: ${escHtml(project.next_action)}</span>` : ''}
+      </div>
+      <div class="kpi-strip">
+        <div class="kpi-card">
+          <div class="kpi-label">Prontidao</div>
+          <div class="kpi-value">${summary.readiness}%</div>
+          <div class="kpi-note">${escHtml(summary.momentum)}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Roadmap</div>
+          <div class="kpi-value">${summary.roadmapDone}/${summary.roadmapTotal || 0}</div>
+          <div class="kpi-note">Itens concluidos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Tarefas</div>
+          <div class="kpi-value">${summary.taskActive}</div>
+          <div class="kpi-note">${summary.taskDone} feitas, ${summary.taskBlocked} bloqueadas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Governanca</div>
+          <div class="kpi-value">${summary.pendingApprovals}</div>
+          <div class="kpi-note">Aprovacoes pendentes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Risco tecnico</div>
+          <div class="kpi-value">${summary.failedExecutions}</div>
+          <div class="kpi-note">Execucoes falhas recentes</div>
+        </div>
+      </div>
+      <div class="project-health">
+        <span class="health-chip highlight">Proximo checkpoint: ${escHtml(summary.nextCheckpoint)}</span>
+        <span class="health-chip">${escHtml(summary.stageLabel)}</span>
       </div>
       <div class="editor-grid">
         <label>
