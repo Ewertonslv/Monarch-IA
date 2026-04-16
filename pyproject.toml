@@ -37,7 +37,14 @@ monarch = "interfaces.cli:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["tests", "apps/whatsapp-notion-bot/whatsapp_notion_bot/tests"]
+testpaths = [
+    "tests",
+    "apps/whatsapp-notion-bot/whatsapp_notion_bot/tests",
+    "apps/pdf-factory/tests",
+    "apps/instagram-automation/tests",
+    "apps/achadinhos/tests",
+    "apps/tiktok-shop/tests",
+]
 
 [tool.ruff]
 line-length = 100
