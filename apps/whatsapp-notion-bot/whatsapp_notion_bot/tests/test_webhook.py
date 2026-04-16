@@ -308,3 +308,49 @@ async def test_webhook_rate_limit_returns_429() -> None:
 
     assert response.status_code == 429
     assert response.json() == {"detail": "Rate limit exceeded for webhook"}
+
+
+@pytest.mark.asyncio
+async def test_webhook_ignores_duplicate_message_id() -> None:
+    settings = build_settings()
+    app = create_app(settings)
+    classifier = StubClassifier(
+        ExpenseData(
+            amount=45.0,
+            category="food",
+            description="Almoco",
+            date=date(2026, 4, 15),
+        )
+    )
+    notion_client = StubNotionClient()
+    zapi_client = StubZAPIClient()
+
+    app.state.classifier = classifier
+    app.state.notion_client = notion_client
+    app.state.zapi_client = zapi_client
+
+    with patch("whatsapp_notion_bot.main._webhook_deduper.register", side_effect=[False, True]):
+        with TestClient(app) as client:
+            first_response = client.post(
+                "/webhook",
+                json={
+                    "phone": "5511999999999",
+                    "messageId": "msg-123",
+                    "text": {"message": "Gastei R$45 no almoco"},
+                },
+            )
+            second_response = client.post(
+                "/webhook",
+                json={
+                    "phone": "5511999999999",
+                    "messageId": "msg-123",
+                    "text": {"message": "Gastei R$45 no almoco"},
+                },
+            )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert second_response.json() == {"status": "ignored", "reason": "duplicate_message"}
+    assert len(classifier.calls) == 1
+    assert len(notion_client.calls) == 1
+    assert len(zapi_client.calls) == 1
