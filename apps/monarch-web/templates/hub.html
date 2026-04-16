@@ -882,6 +882,30 @@ function renderImplementationSummary(summary) {
   `;
 }
 
+function summarizeLocalImplementation(project, detail = null) {
+  if (detail?.implementation_summary) {
+    return detail.implementation_summary;
+  }
+
+  const canonicalPaths = {
+    "monarch-ai": ".",
+    "whatsapp-notion-bot": "apps/whatsapp-notion-bot",
+    "pdf-factory": "apps/pdf-factory",
+    "instagram-automation": "apps/instagram-automation",
+    "canal-dark": "apps/canal-dark",
+    "achadinhos": "apps/achadinhos",
+    "tiktok-shop": "apps/tiktok-shop",
+    "solo-leveling-lab": "apps/solo-leveling-lab"
+  };
+
+  const canonicalPath = canonicalPaths[project.slug] || project.source_path || ".";
+  const packagePresent = Boolean(canonicalPaths[project.slug]);
+  return {
+    implementation_status: packagePresent ? "implementado localmente" : "planejado",
+    canonical_path: canonicalPath
+  };
+}
+
 function renderProjects() {
   const el = document.getElementById("projects");
   if (!projects.length) {
@@ -889,6 +913,12 @@ function renderProjects() {
     return;
   }
   el.innerHTML = projects.map(project => `
+    ${(() => {
+      const implementation = summarizeLocalImplementation(
+        project,
+        projectDetail && projectDetail.project?.id === project.id ? projectDetail : null
+      );
+      return `
     <div class="project-card ${selectedProjectId === project.id ? 'active' : ''}" onclick="loadProjectDetail('${project.id}')">
       <div class="project-top">
         <div>
@@ -910,8 +940,13 @@ function renderProjects() {
         <span class="health-chip highlight">Prontidao ${summarizeProjectExecution(project).readiness}%</span>
         <span class="health-chip">${escHtml(summarizeProjectExecution(project).momentum)}</span>
         <span class="health-chip">${escHtml(summarizeProjectExecution(project).stageLabel)}</span>
+        <span class="health-chip">${escHtml(implementation.implementation_status)}</span>
+      </div>
+      <div class="project-meta">
+        <span>Pacote local: <b>${escHtml(implementation.canonical_path || "-")}</b></span>
       </div>
     </div>
+  `;})()}
   `).join('');
 }
 
