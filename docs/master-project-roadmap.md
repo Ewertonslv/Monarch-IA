@@ -27,10 +27,10 @@ Levar todos os projetos do Hub a um estado minimo completo, com definicao clara 
 - WhatsApp Notion Bot: protecao contra webhook duplicado adicionada no app canonico.
 - PDF Factory: scaffold local criado com pipeline, modelos e testes.
 - Instagram Automation: scaffold local criado com pesquisa, fila, briefing e checklist de publicacao.
+- Canal Dark: scaffold local criado com backlog de pautas e roteiro inicial.
 - Achadinhos: scaffold local criado com catalogo, scoring e shortlist.
 - TikTok Shop: scaffold local criado para converter shortlist em oferta e validacao inicial.
-- Canal Dark: ainda em fase de modelagem.
-- Solo Leveling Lab: ainda em fase de modelagem.
+- Solo Leveling Lab: scaffold local criado com ciclo de experimento e captura de aprendizados.
 
 ## Ondas de execucao
 
@@ -206,6 +206,13 @@ Backlog inicial:
 - criar modelo de roteiro
 - fechar etapa de producao inicial
 
+Implementacao local atual:
+
+- pacote canonico criado em `apps/canal-dark/`
+- backlog inicial de pautas por tema
+- selecao de pauta prioritaria
+- roteiro base renderizavel em markdown
+
 ### 6. Achadinhos
 
 Objetivo final:
@@ -298,6 +305,13 @@ Backlog inicial:
 - escolher formato
 - produzir primeiro artefato
 - registrar aprendizados e proximo ciclo
+
+Implementacao local atual:
+
+- pacote canonico criado em `apps/solo-leveling-lab/`
+- materializacao de tese criativa em experimento
+- ciclo inicial de execucao com proximos passos
+- renderizacao de plano de experimento e aprendizados
 
 ## Ordem de implementacao recomendada
 
