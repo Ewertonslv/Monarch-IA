@@ -7,8 +7,10 @@ Pastas canonicas de aplicacoes do ecossistema:
 - `monarch-runtime/`: entrypoints canonicos do runtime principal do Monarch
 - `pdf-factory/`: pipeline local de briefs para ativos digitais
 - `instagram-automation/`: pipeline local de pesquisa, fila e publicacao assistida
+- `canal-dark/`: pipeline local de backlog e roteiro para operacao de conteudo dark
 - `achadinhos/`: pipeline local de descoberta, scoring e shortlist de produtos
 - `tiktok-shop/`: pipeline local de oferta e validacao comercial inicial
+- `solo-leveling-lab/`: pipeline local de experimento autoral e captura de aprendizados
 - `whatsapp-notion-bot/`: bot WhatsApp -> Notion para controle financeiro
 
 Observacao:
