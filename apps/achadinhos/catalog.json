@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Escova Secadora",
+    "category": "beleza",
+    "source": "fornecedor",
+    "price": 70.0,
+    "estimated_sale_price": 179.0,
+    "visual_hook": 9,
+    "novelty": 7,
+    "demonstration_ease": 8,
+    "notes": []
+  },
+  {
+    "title": "escova secadora",
+    "category": "beleza",
+    "source": "manual",
+    "price": 70.0,
+    "estimated_sale_price": 179.0,
+    "visual_hook": 9,
+    "novelty": 8,
+    "demonstration_ease": 8,
+    "notes": []
+  }
+]

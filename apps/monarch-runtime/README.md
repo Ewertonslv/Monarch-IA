@@ -1,20 +1,23 @@
 # Monarch Runtime
 
-Camada canonica do runtime principal do Monarch.
+Wrapper canonico para os pontos de entrada do Monarch AI.
 
-Objetivo:
+## Execução
 
-- concentrar os pontos de entrada do app principal
-- preparar a futura migracao completa do runtime para dentro de `apps/`
-- manter compatibilidade com os imports atuais do repositorio
+```bash
+# Da raiz do monach-IA
+PYTHONPATH=. python apps/monarch_runtime/main.py          # web + telegram
+PYTHONPATH=. python apps/monarch_runtime/cli.py run "..." # CLI
+```
 
-Estado atual:
+## Estrutura
 
-- `main.py`: wrapper do entrypoint principal
-- `cli.py`: wrapper da CLI atual
-- `telegram_bot.py`: reexport do bot atual
+| Arquivo | O que faz |
+|---|---|
+| `main.py` | Executa `main.main()` da raiz |
+| `cli.py` | Executa `interfaces.cli.main()` da raiz |
+| `telegram_bot.py` | Wrapper do Telegram bot |
 
-Observacao:
+## Nota
 
-- O codigo-fonte operacional ainda continua em `main.py`, `interfaces/`, `core/`, `agents/`, `storage/` e `tools/`.
-- Esta pasta passa a ser o caminho canonico para a organizacao do runtime, sem forcar uma quebra brusca do projeto agora.
+O codigo-fonte real permanece em `main.py`, `interfaces/`, `core/`, `agents/`, `storage/` e `tools/` na raiz do monach-IA. Esta pasta e o caminho canonico de organizacao — nao duplica nada.

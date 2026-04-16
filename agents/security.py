@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Any
 
-from agents.base import BaseAgent, OPUS_MODEL
+from agents.base import BaseAgent, SONNET_MODEL
 from core.task import Task
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,8 @@ Respond with a single JSON object:
 
 class SecurityAgent(BaseAgent):
     name = "security"
-    model = OPUS_MODEL
+    display_name = "Igor - Segurança"
+    model = SONNET_MODEL
     system_prompt = _SYSTEM
 
     async def build_user_message(self, task: Task) -> str:
@@ -55,7 +56,7 @@ class SecurityAgent(BaseAgent):
         approved = result.output.get("approved", False)
         risk = result.output.get("risk_level", "unknown")
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="security_review_complete",
             detail=f"approved={approved} risk={risk}",
         )

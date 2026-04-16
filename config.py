@@ -7,9 +7,18 @@ class Config(BaseSettings):
     # Anthropic
     anthropic_api_key: str = Field(..., validation_alias="ANTHROPIC_API_KEY")
 
-    # GitHub
-    github_token: str = Field(..., validation_alias="GITHUB_TOKEN")
-    github_repo: str = Field(..., validation_alias="GITHUB_REPO")
+    # GitHub (optional — omit to run in local-only mode)
+    github_token: str | None = Field(default=None, validation_alias="GITHUB_TOKEN")
+    github_repo: str | None = Field(default=None, validation_alias="GITHUB_REPO")
+
+    @property
+    def github_enabled(self) -> bool:
+        """True when a real GitHub repo is configured (not a placeholder)."""
+        return bool(
+            self.github_token
+            and self.github_repo
+            and self.github_repo not in ("owner/repo-name", "owner/repo")
+        )
 
     # Telegram
     telegram_bot_token: str = Field(..., validation_alias="TELEGRAM_BOT_TOKEN")
@@ -38,6 +47,9 @@ class Config(BaseSettings):
         default="sqlite+aiosqlite:///./monarch_ai.db", validation_alias="DATABASE_URL"
     )
 
+    # Local mode — use claude CLI (Pro subscription) instead of API credits
+    local_mode: bool = Field(default=False, validation_alias="LOCAL_MODE")
+
     # Behaviour
     max_agent_retries: int = Field(default=3, validation_alias="MAX_AGENT_RETRIES")
     approval_timeout_minutes: int = Field(
@@ -45,6 +57,9 @@ class Config(BaseSettings):
     )
     confidence_threshold: float = Field(
         default=0.70, validation_alias="CONFIDENCE_THRESHOLD"
+    )
+    hub_read_only: bool = Field(
+        default=True, validation_alias="HUB_READ_ONLY"
     )
     implementer_model: str = Field(
         default="claude-sonnet-4-6", validation_alias="IMPLEMENTER_MODEL"

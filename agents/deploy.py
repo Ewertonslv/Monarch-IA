@@ -74,6 +74,7 @@ jobs:
 
 class DeployAgent(BaseAgent):
     name = "deploy"
+    display_name = "Julia - Deploy"
     model = SONNET_MODEL
     system_prompt = _SYSTEM
 
@@ -123,7 +124,7 @@ class DeployAgent(BaseAgent):
 
         task.deploy_report = result.output
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="deploy_config_complete",
             detail=(
                 f"type={result.output.get('project_type')} "
