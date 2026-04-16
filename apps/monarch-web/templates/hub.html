@@ -5,25 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monarch Hub</title>
   <style>
+    :root {
+      --bg-top: #1a2236;
+      --bg-mid: #0d1322;
+      --bg-base: #060914;
+      --panel: rgba(9, 14, 28, 0.88);
+      --panel-soft: rgba(13, 19, 36, 0.78);
+      --panel-strong: rgba(5, 9, 20, 0.95);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(248, 214, 109, 0.24);
+      --text-main: #edf4ff;
+      --text-soft: #97a8c5;
+      --accent: #f7c65d;
+      --accent-strong: #e79c34;
+      --success: #6ee7b7;
+      --danger: #fca5a5;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Georgia, "Times New Roman", serif; background: radial-gradient(circle at top, #1f2937 0%, #0b1020 45%, #050816 100%); color: #e5eefb; min-height: 100vh; }
-    header { background: rgba(9, 14, 30, 0.82); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(148, 163, 184, 0.18); padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    header h1 { font-size: 1.45rem; font-weight: 700; color: #f8d66d; letter-spacing: 0.04em; }
-    header .subtitle { font-size: 0.85rem; color: #94a3b8; }
-    main { max-width: 1180px; margin: 2rem auto; padding: 0 1rem 2rem; }
-    .card { background: rgba(10, 16, 35, 0.88); border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25); }
-    .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #f8d66d; letter-spacing: 0.03em; }
-    .input-row { display: flex; gap: 0.75rem; }
-    .input-row input { flex: 1; background: rgba(5, 8, 22, 0.9); border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 10px; padding: 0.75rem 1rem; color: #e2e8f0; font-size: 0.95rem; }
-    .input-row input:focus { outline: none; border-color: #f8d66d; }
-    button { background: linear-gradient(135deg, #f8d66d 0%, #e8a93b 100%); color: #101726; border: none; border-radius: 10px; padding: 0.7rem 1.2rem; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+    body {
+      font-family: "Trebuchet MS", "Segoe UI Variable", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(247, 198, 93, 0.1), transparent 28%),
+        radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 22%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg-base) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(6, 10, 22, 0.86);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      padding: 1.1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    header h1 { font-size: 1.6rem; font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
+    header .subtitle { font-size: 0.92rem; color: var(--text-soft); max-width: 42rem; }
+    main { max-width: 1360px; margin: 2rem auto; padding: 0 1.25rem 2.5rem; }
+    .card {
+      background: linear-gradient(180deg, rgba(13, 19, 36, 0.94) 0%, rgba(8, 12, 24, 0.9) 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 1.6rem;
+      margin-bottom: 1.35rem;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card h2 { font-size: 1.05rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent); letter-spacing: 0.02em; }
+    .input-row { display: flex; gap: 0.9rem; align-items: stretch; }
+    .input-row input { flex: 1; }
+    input, select, textarea, button { width: 100%; }
+    .input-row input,
+    .projects-toolbar select, .ideas-toolbar select, .ideas-toolbar input, .hub-toolbar select, .hub-toolbar input,
+    .ideas-create-grid textarea, .ideas-create-grid select, .ideas-create-grid input,
+    .hub-create-grid textarea, .hub-create-grid select, .hub-create-grid input,
+    .metric-create-grid input, .metric-create-grid select,
+    .idea-editor select, .hub-task-editor select, .hub-task-editor input,
+    .business-unit-create-grid input, .business-unit-create-grid select,
+    .business-unit-editor input, .business-unit-editor select,
+    .editor-grid input, .editor-grid select {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.82rem 0.95rem;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: rgba(247, 198, 93, 0.62);
+      box-shadow: 0 0 0 4px rgba(247, 198, 93, 0.08);
+    }
+    button {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+      color: #101726;
+      border: none;
+      border-radius: 14px;
+      padding: 0.85rem 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.92rem;
+      min-height: 48px;
+      letter-spacing: 0.01em;
+      box-shadow: 0 12px 24px rgba(231, 156, 52, 0.2);
+    }
     button:hover { filter: brightness(1.06); }
     button.danger { background: #f87171; }
     button.danger:hover { background: #fca5a5; }
     button.success { background: #34d399; }
     button.success:hover { background: #6ee7b7; }
-    .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; align-items: start; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; }
+    .grid { display: grid; grid-template-columns: 1.2fr 0.95fr; gap: 1.35rem; align-items: start; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 1rem; }
     .projects-toolbar, .ideas-toolbar, .hub-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .projects-toolbar select, .ideas-toolbar select, .ideas-toolbar input, .hub-toolbar select, .hub-toolbar input, .ideas-create-grid textarea, .ideas-create-grid select, .ideas-create-grid input, .hub-create-grid textarea, .hub-create-grid select, .hub-create-grid input, .metric-create-grid input, .metric-create-grid select, .idea-editor select, .hub-task-editor select, .hub-task-editor input {
       background: rgba(5, 8, 22, 0.9);
@@ -33,16 +113,31 @@
       color: #e2e8f0;
       font-size: 0.88rem;
     }
-    .projects-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
-    .business-units-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
-    .ideas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
-    .hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
-    .stat { background: rgba(5, 8, 22, 0.85); border: 1px solid rgba(248, 214, 109, 0.18); border-radius: 12px; padding: 1rem; }
-    .stat-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: #8ea1c2; margin-bottom: 0.4rem; }
-    .stat-value { font-size: 1.8rem; color: #f8fafc; font-weight: 700; }
-    .stat-note { font-size: 0.78rem; color: #94a3b8; margin-top: 0.35rem; }
+    .projects-grid, .business-units-grid, .ideas-grid, .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .stat {
+      background: linear-gradient(180deg, rgba(7, 12, 24, 0.96) 0%, rgba(10, 15, 31, 0.9) 100%);
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      padding: 1.1rem;
+      min-height: 138px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .stat-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; color: #8ea1c2; margin-bottom: 0.45rem; }
+    .stat-value { font-size: 2rem; color: #f8fafc; font-weight: 800; }
+    .stat-note { font-size: 0.8rem; color: var(--text-soft); margin-top: 0.4rem; }
     .activity-list, #tasks { display: flex; flex-direction: column; gap: 0.8rem; }
-    .project-card, .activity-item, .task-item, .idea-card, .hub-task-card, .approval-card, .business-unit-card { background: rgba(5, 8, 22, 0.85); border: 1px solid rgba(148, 163, 184, 0.14); border-radius: 12px; padding: 0.95rem 1rem; }
+    .project-card, .activity-item, .task-item, .idea-card, .hub-task-card, .approval-card, .business-unit-card {
+      background: linear-gradient(180deg, rgba(8, 12, 25, 0.96) 0%, rgba(5, 8, 20, 0.88) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      padding: 1rem 1.05rem;
+    }
     .project-top, .activity-top, .task-header { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.35rem; }
     .idea-top { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; align-items: flex-start; }
     .project-name { font-size: 1rem; font-weight: 700; color: #f8fafc; }
@@ -74,7 +169,7 @@
     .activity-main strong { color: #f8d66d; }
     .activity-meta, .task-meta { margin-top: 0.45rem; font-size: 0.78rem; color: #7f93b5; }
     .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-    .detail-panel { background: rgba(5, 8, 22, 0.85); border: 1px solid rgba(148, 163, 184, 0.14); border-radius: 12px; padding: 1rem; }
+    .detail-panel { background: linear-gradient(180deg, rgba(8, 12, 25, 0.96) 0%, rgba(6, 10, 22, 0.88) 100%); border: 1px solid rgba(148, 163, 184, 0.14); border-radius: 18px; padding: 1rem; }
     .detail-panel h3 { font-size: 0.9rem; color: #f8d66d; margin-bottom: 0.7rem; }
     .detail-list { display: flex; flex-direction: column; gap: 0.55rem; }
     .detail-item { font-size: 0.84rem; color: #d5dfef; border-bottom: 1px solid rgba(148, 163, 184, 0.08); padding-bottom: 0.45rem; }
@@ -93,26 +188,18 @@
     }
     .editor-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
     .save-note { margin-top: 0.7rem; font-size: 0.8rem; color: #94a3b8; }
-    .business-unit-create-grid { display: grid; grid-template-columns: 1fr 0.9fr 1.2fr 0.8fr auto; gap: 0.8rem; margin-bottom: 1rem; align-items: start; }
-    .business-unit-create-grid input, .business-unit-create-grid select, .business-unit-editor input, .business-unit-editor select {
-      background: rgba(5, 8, 22, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      border-radius: 10px;
-      padding: 0.65rem 0.8rem;
-      color: #e2e8f0;
-      font-size: 0.88rem;
-    }
+    .business-unit-create-grid { display: grid; grid-template-columns: 1fr 0.9fr 1.15fr 0.8fr auto; gap: 0.85rem; margin-bottom: 1rem; align-items: start; }
     .business-unit-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.8fr) auto; gap: 0.7rem; align-items: end; margin-top: 0.8rem; }
     .business-unit-editor > * { min-width: 0; }
     .business-unit-editor label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem; color: #8ea1c2; min-width: 0; }
     .business-unit-editor button { white-space: nowrap; }
     .business-unit-note { margin-top: 0.7rem; font-size: 0.78rem; color: #94a3b8; min-height: 1rem; }
-    .ideas-create-grid { display: grid; grid-template-columns: 1.1fr 1.3fr 0.8fr 0.7fr auto; gap: 0.8rem; margin-bottom: 1rem; align-items: start; }
-    .ideas-create-grid textarea { min-height: 74px; resize: vertical; }
-    .ideas-create-grid button { align-self: stretch; min-height: 74px; }
-    .hub-create-grid { display: grid; grid-template-columns: 1fr 1.1fr 0.8fr 0.8fr auto; gap: 0.8rem; margin-bottom: 1rem; align-items: start; }
-    .hub-create-grid textarea { min-height: 74px; resize: vertical; }
-    .hub-create-grid button { align-self: stretch; min-height: 74px; }
+    .ideas-create-grid { display: grid; grid-template-columns: 1.05fr 1.35fr 0.85fr 0.75fr auto; gap: 0.85rem; margin-bottom: 1rem; align-items: start; }
+    #idea-raw-input { grid-column: 2 / span 2; min-height: 104px; }
+    .ideas-create-grid button { align-self: stretch; min-height: 104px; }
+    .hub-create-grid { display: grid; grid-template-columns: 1fr 1.15fr 0.85fr 0.85fr auto; gap: 0.85rem; margin-bottom: 1rem; align-items: start; }
+    #hub-task-description { grid-column: 1 / span 4; min-height: 104px; }
+    .hub-create-grid button { grid-row: 1 / span 2; align-self: stretch; min-height: 100%; }
     .metric-create-grid { display: grid; grid-template-columns: 1.1fr 0.7fr 0.7fr auto; gap: 0.8rem; margin-top: 1rem; align-items: end; }
     .idea-editor { display: grid; grid-template-columns: 0.95fr 1.1fr auto; gap: 0.7rem; align-items: end; }
     .idea-editor label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem; color: #8ea1c2; }
@@ -134,12 +221,25 @@
     .task-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
     .pr-link { font-size: 0.8rem; color: #f8d66d; text-decoration: none; }
     .pr-link:hover { text-decoration: underline; }
-    #ws-status { font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 10px; margin-left: auto; }
+    #ws-status { font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 999px; margin-left: auto; }
     #ws-status.connected { background: #065f46; color: #6ee7b7; }
     #ws-status.disconnected { background: #7f1d1d; color: #fca5a5; }
     code { font-family: "Consolas", monospace; color: #c4b5fd; }
-    @media (max-width: 1200px) { .business-unit-editor { grid-template-columns: 1fr; } .business-unit-editor button { width: 100%; } }
-    @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .projects-grid, .business-units-grid, .ideas-grid, .hub-grid { grid-template-columns: 1fr; } .detail-grid { grid-template-columns: 1fr; } .editor-grid, .ideas-create-grid, .idea-editor, .hub-create-grid, .hub-task-editor, .business-unit-create-grid, .business-unit-editor, .metric-create-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1200px) {
+      .business-unit-editor { grid-template-columns: 1fr; }
+      .business-unit-editor button { width: 100%; }
+      .ideas-create-grid, .hub-create-grid, .business-unit-create-grid { grid-template-columns: 1fr 1fr; }
+      #idea-raw-input, #hub-task-description { grid-column: 1 / -1; }
+      .ideas-create-grid button, .hub-create-grid button { grid-row: auto; min-height: 52px; }
+    }
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .projects-grid, .business-units-grid, .ideas-grid, .hub-grid { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .editor-grid, .ideas-create-grid, .idea-editor, .hub-create-grid, .hub-task-editor, .business-unit-create-grid, .business-unit-editor, .metric-create-grid { grid-template-columns: 1fr; }
+      #idea-raw-input, #hub-task-description { grid-column: auto; }
+    }
     @media (max-width: 640px) { header { padding: 1rem; } .input-row { flex-direction: column; } .stats-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -152,17 +252,17 @@
 
   <main>
     <div class="card">
-      <h2>Visao Do Ecossistema</h2>
+      <h2>Visao do ecossistema</h2>
       <div class="stats-grid" id="overview-stats">
         <div class="stat"><div class="stat-label">Projetos</div><div class="stat-value">--</div><div class="stat-note">Carregando</div></div>
         <div class="stat"><div class="stat-label">Ativos</div><div class="stat-value">--</div><div class="stat-note">Carregando</div></div>
         <div class="stat"><div class="stat-label">Ideias abertas</div><div class="stat-value">--</div><div class="stat-note">Carregando</div></div>
-        <div class="stat"><div class="stat-label">Aprovacoes</div><div class="stat-value">--</div><div class="stat-note">Carregando</div></div>
+        <div class="stat"><div class="stat-label">Aprovacoes</div><div class="stat-value">--</div><div class="stat-note">Pendencias e gates</div></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Nova Solicitacao</h2>
+      <h2>Nova solicitacao</h2>
       <div class="input-row">
         <input id="task-input" type="text" placeholder="Descreva a ideia, projeto ou tarefa..." autocomplete="off" />
         <button onclick="submitTask()">Disparar Pipeline</button>
@@ -187,14 +287,14 @@
     </div>
 
     <div class="card">
-      <h2>Visao Da Business Unit</h2>
+      <h2>Visao da business unit</h2>
       <div id="business-unit-detail">
         <p style="color:#718096;font-size:0.85rem;">Clique em uma business unit para ver projetos, ideias, tarefas e aprovacoes dessa frente.</p>
       </div>
     </div>
 
     <div class="card">
-      <h2>Projetos Do Hub</h2>
+      <h2>Projetos do hub</h2>
       <div class="projects-toolbar">
         <select id="project-status-filter" onchange="loadHubProjects()">
           <option value="">Todos os status</option>
@@ -217,21 +317,21 @@
     </div>
 
     <div class="card">
-      <h2>Detalhe Do Projeto</h2>
+      <h2>Detalhe do projeto</h2>
       <div id="project-detail">
         <p style="color:#718096;font-size:0.85rem;">Clique em um projeto para ver ideias, tarefas, aprovacoes e execucoes recentes.</p>
       </div>
     </div>
 
     <div class="card">
-      <h2>Metricas Do Projeto</h2>
+      <h2>Metricas do projeto</h2>
       <div id="project-metrics-panel">
         <p style="color:#718096;font-size:0.85rem;">Selecione um projeto para visualizar e lancar metricas.</p>
       </div>
     </div>
 
     <div class="card">
-      <h2>Inbox De Ideias</h2>
+      <h2>Inbox de ideias</h2>
       <div class="ideas-create-grid">
         <input id="idea-title" type="text" placeholder="Titulo curto da ideia" />
         <textarea id="idea-raw-input" placeholder="Descreva a oportunidade, experimento ou projeto que o Monarch deve acompanhar..."></textarea>
@@ -270,7 +370,7 @@
 
     <div class="grid">
       <div class="card">
-        <h2>Tarefas Do Hub</h2>
+        <h2>Tarefas do hub</h2>
         <div class="hub-create-grid">
           <select id="hub-task-project"></select>
           <input id="hub-task-title" type="text" placeholder="Titulo da tarefa" />
@@ -313,7 +413,7 @@
       </div>
 
       <div class="card">
-        <h2>Fila De Aprovacoes</h2>
+        <h2>Fila de aprovacoes</h2>
         <div class="hub-toolbar">
           <select id="hub-approval-status-filter" onchange="loadHubApprovals()">
             <option value="">Todos os status</option>
@@ -600,16 +700,16 @@ function renderBusinessUnitDetail() {
       </div>
       <div class="detail-summary">
         <span>${escHtml(unit.description || "Sem descricao ainda.")}</span>
-        <span>Projetos: <b>${summary.projects_count}</b> · Ativos: <b>${summary.active_projects_count}</b></span>
-        <span>Ideias abertas: <b>${summary.open_ideas_count}</b> · Tarefas abertas: <b>${summary.open_tasks_count}</b></span>
+        <span>Projetos: <b>${summary.projects_count}</b> - Ativos: <b>${summary.active_projects_count}</b></span>
+        <span>Ideias abertas: <b>${summary.open_ideas_count}</b> - Tarefas abertas: <b>${summary.open_tasks_count}</b></span>
         <span>Aprovacoes pendentes: <b>${summary.pending_approvals_count}</b></span>
-        <span>Metricas registradas: <b>${summary.metrics_count}</b> Â· Receita BRL: <b>${summary.revenue_brl_total}</b></span>
+        <span>Metricas registradas: <b>${summary.metrics_count}</b> - Receita BRL: <b>${summary.revenue_brl_total}</b></span>
       </div>
     </div>
     <div class="detail-grid">
       <div class="detail-panel">
         <h3>Projetos da frente</h3>
-        <div class="detail-list">${renderDetailItems(businessUnitDetail.projects, project => `<div><strong>${escHtml(project.name)}</strong></div><div>${escHtml(project.status)} · ${escHtml(project.priority)}</div>`)}</div>
+        <div class="detail-list">${renderDetailItems(businessUnitDetail.projects, project => `<div><strong>${escHtml(project.name)}</strong></div><div>${escHtml(project.status)} - ${escHtml(project.priority)}</div>`)}</div>
       </div>
       <div class="detail-panel">
         <h3>Ideias da frente</h3>
@@ -617,7 +717,7 @@ function renderBusinessUnitDetail() {
       </div>
       <div class="detail-panel">
         <h3>Tarefas da frente</h3>
-        <div class="detail-list">${renderDetailItems(businessUnitDetail.tasks, task => `<div><strong>${escHtml(task.title)}</strong></div><div>${escHtml(task.status)} · ${escHtml(task.priority)}</div>`)}</div>
+        <div class="detail-list">${renderDetailItems(businessUnitDetail.tasks, task => `<div><strong>${escHtml(task.title)}</strong></div><div>${escHtml(task.status)} - ${escHtml(task.priority)}</div>`)}</div>
       </div>
       <div class="detail-panel">
         <h3>Aprovacoes da frente</h3>
@@ -943,7 +1043,7 @@ function renderProjectDetail() {
       </div>
       <div class="detail-panel">
         <h3>Tarefas do hub</h3>
-        <div class="detail-list">${renderDetailItems(projectDetail.tasks, task => `<div><strong>${escHtml(task.title)}</strong></div><div>${escHtml(task.status)} · ${escHtml(task.priority)}</div>`)}</div>
+        <div class="detail-list">${renderDetailItems(projectDetail.tasks, task => `<div><strong>${escHtml(task.title)}</strong></div><div>${escHtml(task.status)} - ${escHtml(task.priority)}</div>`)}</div>
       </div>
       <div class="detail-panel">
         <h3>Aprovacoes</h3>
@@ -951,7 +1051,7 @@ function renderProjectDetail() {
       </div>
       <div class="detail-panel">
         <h3>Execucoes recentes</h3>
-        <div class="detail-list">${renderDetailItems(projectDetail.executions, execution => `<div><strong>${escHtml(execution.execution_type)}</strong></div><div>${escHtml(execution.status)} · ${escHtml(execution.agent_name)}</div>`)}</div>
+        <div class="detail-list">${renderDetailItems(projectDetail.executions, execution => `<div><strong>${escHtml(execution.execution_type)}</strong></div><div>${escHtml(execution.status)} - ${escHtml(execution.agent_name)}</div>`)}</div>
       </div>
     </div>
   `;

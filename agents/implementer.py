@@ -2,7 +2,8 @@ import json
 import logging
 from typing import Any
 
-from agents.base import BaseAgent, OPUS_MODEL
+from agents.base import BaseAgent, SONNET_MODEL
+from config import config
 from core.task import Task
 from tools.github_tools import GitHubTools
 from tools.fs_tools import FsTools
@@ -31,7 +32,8 @@ Always respond with a single JSON object:
 
 class ImplementerAgent(BaseAgent):
     name = "implementer"
-    model = OPUS_MODEL
+    model = config.implementer_model or SONNET_MODEL
+    max_tokens = config.implementer_max_tokens
     system_prompt = _SYSTEM
 
     def __init__(self) -> None:
@@ -43,16 +45,99 @@ class ImplementerAgent(BaseAgent):
     def tools(self) -> list[dict[str, Any]]:
         return self._github.as_tools_schema()
 
+    def _trim_text(self, value: Any, limit: int = 400) -> str:
+        text = str(value or "").strip()
+        if len(text) <= limit:
+            return text
+        return f"{text[: limit - 3].rstrip()}..."
+
+    def _summarize_architecture(self, arch: dict[str, Any]) -> dict[str, Any]:
+        if not arch:
+            return {}
+
+        summary: dict[str, Any] = {}
+        scalar_keys = (
+            "summary",
+            "overview",
+            "goal",
+            "approach",
+            "testing_strategy",
+            "deployment_notes",
+        )
+        list_keys = (
+            "components",
+            "patterns",
+            "files_to_modify",
+            "new_files",
+            "risks",
+        )
+
+        for key in scalar_keys:
+            if arch.get(key):
+                summary[key] = self._trim_text(arch[key], 500)
+
+        for key in list_keys:
+            values = arch.get(key)
+            if isinstance(values, list) and values:
+                summary[key] = [
+                    self._trim_text(item, 160) for item in values[:8]
+                ]
+
+        if arch.get("data_flow"):
+            summary["data_flow"] = self._trim_text(arch["data_flow"], 500)
+
+        return summary
+
+    def _summarize_plan(self, plan: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if not plan:
+            return []
+
+        summary: list[dict[str, Any]] = []
+        for index, step in enumerate(plan[:10], start=1):
+            if not isinstance(step, dict):
+                summary.append({"step": index, "title": self._trim_text(step, 180)})
+                continue
+
+            compact_step = {
+                "step": index,
+                "title": self._trim_text(
+                    step.get("title") or step.get("name") or f"Step {index}",
+                    180,
+                ),
+            }
+
+            if step.get("description"):
+                compact_step["description"] = self._trim_text(
+                    step["description"], 260
+                )
+            if step.get("files"):
+                compact_step["files"] = [
+                    self._trim_text(path, 120) for path in step["files"][:6]
+                ]
+            if step.get("tests"):
+                compact_step["tests"] = self._trim_text(step["tests"], 180)
+
+            summary.append(compact_step)
+
+        return summary
+
     async def build_user_message(self, task: Task) -> str:
         plan = task.plan or []
         arch = task.architecture or {}
         branch = task.branch_name or "main"
+        summarized_arch = self._summarize_architecture(arch)
+        summarized_plan = self._summarize_plan(plan)
         return (
             f"Implement the following task on branch '{branch}'.\n\n"
             f"Original request: {task.raw_input}\n\n"
-            f"Architecture:\n{json.dumps(arch, indent=2)}\n\n"
-            f"Implementation plan:\n{json.dumps(plan, indent=2)}\n\n"
-            f"Use the provided tools to read existing files and write new ones."
+            "Constraints:\n"
+            "- Prefer the smallest safe implementation slice first.\n"
+            "- Use existing patterns already present in the repository.\n"
+            "- Read only the files you need before writing.\n"
+            "- Keep changes focused on the requested architecture and plan.\n\n"
+            f"Architecture summary:\n{json.dumps(summarized_arch, indent=2)}\n\n"
+            f"Implementation plan summary:\n{json.dumps(summarized_plan, indent=2)}\n\n"
+            "Use the provided tools to inspect the codebase and write the required files."
         )
 
     async def execute_tool(self, name: str, inputs: dict[str, Any]) -> Any:
