@@ -21,6 +21,7 @@ Respond with a single JSON object:
 
 class PrioritizationAgent(BaseAgent):
     name = "prioritization"
+    display_name = "Bruno - Prioridade"
     model = SONNET_MODEL
     system_prompt = _SYSTEM
 
@@ -37,7 +38,7 @@ class PrioritizationAgent(BaseAgent):
         result = await super().run(task)
         task.priority = result.output.get("priority", "medium")
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="prioritization_complete",
             detail=f"priority={task.priority} score={result.output.get('priority_score')}",
         )

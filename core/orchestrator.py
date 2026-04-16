@@ -30,7 +30,11 @@ logger = logging.getLogger(__name__)
 class Orchestrator:
     """Central coordinator — runs the full 11-agent pipeline for a task."""
 
-    def __init__(self, db: Database) -> None:
+    def __init__(
+        self,
+        db: Database,
+        progress_callback: Callable[[str, str, dict[str, Any] | None], None] | None = None,
+    ) -> None:
         self.db = db
         self._breakers: dict[str, CircuitBreaker] = {}
         self._telegram: "TelegramBot | None" = None
@@ -39,6 +43,44 @@ class Orchestrator:
             project_slug=config.monarch_core_project_slug,
             api_key=config.monarch_core_api_key,
         )
+        self._progress_callback = progress_callback
+
+    def _report_progress(
+        self,
+        agent_name: str,
+        status: str,
+        payload: dict[str, Any] | None = None,
+    ) -> None:
+        if self._progress_callback:
+            try:
+                self._progress_callback(agent_name, status, payload)
+            except Exception as exc:
+                logger.warning("[orchestrator] progress callback failed: %s", exc)
+
+    async def _run_agent(self, agent_name: str, coro_fn: Callable[[], Awaitable[Any]]) -> Any:
+        """Run an agent call through its circuit breaker with retry."""
+        breaker = self._breaker(agent_name)
+        last_exc: Exception | None = None
+        for attempt in range(1, config.max_agent_retries + 1):
+            self._report_progress(agent_name, "starting", {"attempt": attempt})
+            try:
+                result = await breaker.call(coro_fn)
+                payload: dict[str, Any] = {}
+                if hasattr(result, "confidence"):
+                    payload["confidence"] = getattr(result, "confidence")
+                if hasattr(result, "concerns"):
+                    payload["concerns"] = getattr(result, "concerns")
+                self._report_progress(agent_name, "finished", payload)
+                return result
+            except CircuitBreakerError:
+                raise
+            except Exception as exc:
+                last_exc = exc
+                self._report_progress(agent_name, "failed", {"error": str(exc), "attempt": attempt})
+                logger.warning("[%s] Attempt %d failed: %s", agent_name, attempt, exc)
+                if attempt < config.max_agent_retries:
+                    await asyncio.sleep(2 ** attempt)
+        raise RuntimeError(f"[{agent_name}] All {config.max_agent_retries} retries exhausted") from last_exc
 
     def set_telegram_bot(self, bot: "TelegramBot") -> None:
         """Wire the Telegram bot so approval gates can send notifications."""
@@ -51,22 +93,6 @@ class Orchestrator:
                 failure_threshold=config.max_agent_retries,
             )
         return self._breakers[name]
-
-    async def _run_agent(self, agent_name: str, coro_fn: Callable[[], Awaitable[Any]]) -> Any:
-        """Run an agent call through its circuit breaker with retry."""
-        breaker = self._breaker(agent_name)
-        last_exc: Exception | None = None
-        for attempt in range(1, config.max_agent_retries + 1):
-            try:
-                return await breaker.call(coro_fn)
-            except CircuitBreakerError:
-                raise
-            except Exception as exc:
-                last_exc = exc
-                logger.warning("[%s] Attempt %d failed: %s", agent_name, attempt, exc)
-                if attempt < config.max_agent_retries:
-                    await asyncio.sleep(2 ** attempt)
-        raise RuntimeError(f"[{agent_name}] All {config.max_agent_retries} retries exhausted") from last_exc
 
     # ------------------------------------------------------------------
     # Human-approval gate
@@ -177,16 +203,17 @@ class Orchestrator:
 
             # --- Execution layer ---
             task.status = TaskStatus.RUNNING
-            gh = GitHubTools()
-            if task.branch_name:
-                try:
-                    gh.create_branch(task.branch_name)
-                except Exception as exc:
-                    logger.warning("Branch creation failed (may already exist): %s", exc)
+            if config.github_enabled:
+                gh = GitHubTools()
+                if task.branch_name:
+                    try:
+                        gh.create_branch(task.branch_name)
+                    except Exception as exc:
+                        logger.warning("Branch creation failed (may already exist): %s", exc)
 
             await self._run_agent("implementer", lambda: ImplementerAgent().run(task))
 
-            if task.branch_name and not task.pr_url:
+            if config.github_enabled and task.branch_name and not task.pr_url:
                 reqs = task.requirements or {}
                 task.pr_url = gh.create_pr(
                     title=f"feat: {reqs.get('summary', task.raw_input[:60])}",
@@ -195,6 +222,8 @@ class Orchestrator:
                 )
                 task.add_history(agent="orchestrator", action="pr_created", detail=task.pr_url)
                 await self.db.update_task(task)
+            elif not config.github_enabled:
+                task.add_history(agent="orchestrator", action="local_mode", detail="GitHub disabled — files written locally")
 
             await self._run_agent("testing", lambda: TestingAgent().run(task))
             await self._run_agent("reviewer", lambda: ReviewerAgent().run(task))

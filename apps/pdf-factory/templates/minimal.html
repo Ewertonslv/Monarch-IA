@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ plan.title }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f8f9fa;
+      color: #1a1a2e;
+      line-height: 1.7;
+      padding: 3rem 2rem;
+    }
+    .container { max-width: 760px; margin: 0 auto; }
+    .header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 2.5rem 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .subtitle { color: #a0aec0; font-size: 1.05rem; }
+    .meta {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #2d3748;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .meta-item { font-size: 0.85rem; color: #a0aec0; }
+    .meta-item strong { color: #e2e8f0; display: block; }
+    .section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .section-summary {
+      color: #4a5568;
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+    .bullets { list-style: none; }
+    .bullets li {
+      padding: 0.35rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      color: #2d3748;
+    }
+    .bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.7rem;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4f46e5;
+    }
+    .cta {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+    }
+    .cta h2 { color: #fff; border: none; padding: 0; margin-bottom: 0.75rem; font-size: 1.25rem; }
+    .cta p { opacity: 0.9; font-size: 1rem; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .section { box-shadow: none; border: 1px solid #e2e8f0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>{{ plan.title }}</h1>
+      <p class="subtitle">{{ plan.subtitle }}</p>
+      <div class="meta">
+        <div class="meta-item"><strong>Publico</strong>{{ plan.audience }}</div>
+        <div class="meta-item"><strong>Objetivo</strong>{{ plan.objective }}</div>
+      </div>
+    </div>
+
+    {% for section in plan.sections %}
+    <div class="section">
+      <h2>{{ loop.index }}. {{ section.heading }}</h2>
+      <p class="section-summary">{{ section.summary }}</p>
+      {% if section.bullets %}
+      <ul class="bullets">
+        {% for bullet in section.bullets %}
+        <li>{{ bullet }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if plan.call_to_action %}
+    <div class="cta">
+      <h2>Proximo Passo</h2>
+      <p>{{ plan.call_to_action }}</p>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

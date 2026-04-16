@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ plan.title }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #fef9f3;
+      color: #2d1b0e;
+      line-height: 1.8;
+      padding: 3rem 2rem;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .header {
+      border-left: 5px solid #d97706;
+      padding-left: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; color: #92400e; }
+    .subtitle { color: #78350f; font-size: 1.05rem; font-style: italic; }
+    .meta {
+      margin-top: 1rem;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .meta-item { font-size: 0.9rem; color: #92400e; }
+    .meta-item strong { display: block; color: #78350f; }
+    .section { margin-bottom: 2rem; }
+    .section h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #d97706;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: system-ui, sans-serif;
+      flex-shrink: 0;
+    }
+    .section-summary { color: #78350f; font-size: 0.95rem; margin-bottom: 0.6rem; font-style: italic; }
+    .bullets { list-style: none; }
+    .bullets li {
+      padding: 0.3rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+      color: #44403c;
+    }
+    .bullets li::before {
+      content: '→';
+      position: absolute;
+      left: 0.25rem;
+      color: #d97706;
+      font-weight: 700;
+    }
+    .cta {
+      background: #92400e;
+      color: #fff;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .cta h2 { color: #fde68a; font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .cta p { opacity: 0.92; }
+    .divider {
+      border: none;
+      border-top: 1px solid #fde68a;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>{{ plan.title }}</h1>
+      <p class="subtitle">{{ plan.subtitle }}</p>
+      <div class="meta">
+        <div class="meta-item"><strong>Publico</strong>{{ plan.audience }}</div>
+        <div class="meta-item"><strong>Objetivo</strong>{{ plan.objective }}</div>
+      </div>
+    </div>
+
+    {% for section in plan.sections %}
+    <div class="section">
+      <h2>
+        <span class="section-num">{{ loop.index }}</span>
+        {{ section.heading }}
+      </h2>
+      <p class="section-summary">{{ section.summary }}</p>
+      {% if section.bullets %}
+      <ul class="bullets">
+        {% for bullet in section.bullets %}
+        <li>{{ bullet }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if plan.call_to_action %}
+    <hr class="divider">
+    <div class="cta">
+      <h2>Acao Recomendada</h2>
+      <p>{{ plan.call_to_action }}</p>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

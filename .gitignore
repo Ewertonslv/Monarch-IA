@@ -12,3 +12,22 @@ htmlcov/
 *.db-shm
 *.db-wal
 /node_modules/
+
+# Generated output
+apps/*/output/
+
+# Legacy directories (use canonical paths in apps/)
+whatsapp_notion_bot/
+interfaces/web/
+deploy/
+monarch_phase1/
+
+# Binary/docs
+*.docx
+*.pdf
+*.xlsx
+*.pptx
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,19 +1,24 @@
 # Apps
 
-Pastas canonicas de aplicacoes do ecossistema:
+Pastas canonicas de aplicacoes do ecossistema.
 
-- `monarch-core/`: API central do Monarch Hub
-- `monarch-web/`: painel web atual do Monarch Hub
-- `monarch-runtime/`: entrypoints canonicos do runtime principal do Monarch
-- `pdf-factory/`: pipeline local de briefs para ativos digitais
-- `instagram-automation/`: pipeline local de pesquisa, fila e publicacao assistida
-- `canal-dark/`: pipeline local de backlog e roteiro para operacao de conteudo dark
-- `achadinhos/`: pipeline local de descoberta, scoring e shortlist de produtos
-- `tiktok-shop/`: pipeline local de oferta e validacao comercial inicial
-- `solo-leveling-lab/`: pipeline local de experimento autoral e captura de aprendizados
-- `whatsapp-notion-bot/`: bot WhatsApp -> Notion para controle financeiro
+## Status
 
-Observacao:
+| App | Status | Descricao |
+|---|---|---|
+| `monarch-core` | **FUNCIONAL** | API FastAPI + SQLAlchemy com 8 entidades, migrations, Docker |
+| `monarch-web` | **PARCIAL** | Painel FastAPI que consome monarch-core |
+| `monarch-runtime` | **WRAPPER** | Wrapper para entrypoints da raiz |
+| `pdf-factory` | **COMERCIAL** | Pipeline CLI de briefs para MD/HTML/PDF com testes |
+| `achadinhos` | **COMERCIAL** | Pipeline CLI de discovery e scoring de produtos |
+| `instagram-automation` | **COMERCIAL** | Pipeline CLI de pesquisa, fila e aprovacao |
+| `canal-dark` | **COMERCIAL** | Pipeline CLI de pautas e roteiros |
+| `tiktok-shop` | **COMERCIAL** | Pipeline CLI de oferta e validacao comercial |
+| `solo-leveling-lab` | **COMERCIAL** | Pipeline CLI de experimento criativo |
+| `whatsapp-notion-bot` | **FUNCIONAL** | Bot Z-API + Claude + Notion com Docker |
 
-- a pasta raiz legada `whatsapp_notion_bot/` nao e a referencia principal para novas mudancas
-- novas implementacoes devem priorizar sempre os caminhos canonicos dentro de `apps/`
+## apps/ vs raiz
+
+- **apps/**: caminho canonico para todas as aplicacoes
+- **whatsapp_notion_bot/ (raiz)**: legado — referencias canonicas estao em `apps/whatsapp-notion-bot/`
+- **monarch_phase1/**:_DEPRECADO — conteudo antigo em `apps/monarch-core/`

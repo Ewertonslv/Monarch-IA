@@ -316,24 +316,13 @@
 
     <div class="card">
       <h2>Nova solicitacao</h2>
-      <div class="input-row">
-        <input id="task-input" type="text" placeholder="Descreva a ideia, projeto ou tarefa..." autocomplete="off" />
-        <button onclick="submitTask()">Disparar Pipeline</button>
-      </div>
+      <p style="color:#c7d2fe; font-size:0.95rem; line-height:1.6;">
+        O painel do Hub é apenas um dashboard de visualização. Para iniciar pipelines ou criar itens use o CLI ou Telegram.
+      </p>
     </div>
 
     <div class="card">
       <h2>Business Units</h2>
-      <div class="business-unit-create-grid">
-        <input id="bu-name" type="text" placeholder="Nome da frente" />
-        <input id="bu-slug" type="text" placeholder="slug-da-frente" />
-        <input id="bu-description" type="text" placeholder="Descricao curta da unidade" />
-        <select id="bu-status">
-          <option value="active">Ativa</option>
-          <option value="paused">Pausada</option>
-        </select>
-        <button onclick="createBusinessUnit()">Criar BU</button>
-      </div>
       <div id="business-units" class="business-units-grid">
         <p style="color:#718096;font-size:0.85rem;">Carregando business units...</p>
       </div>
@@ -385,20 +374,9 @@
 
     <div class="card">
       <h2>Inbox de ideias</h2>
-      <div class="ideas-create-grid">
-        <input id="idea-title" type="text" placeholder="Titulo curto da ideia" />
-        <textarea id="idea-raw-input" placeholder="Descreva a oportunidade, experimento ou projeto que o Monarch deve acompanhar..."></textarea>
-        <select id="idea-classification">
-          <option value="">Sem classificacao</option>
-          <option value="new_project">Novo projeto</option>
-          <option value="experiment">Experimento</option>
-          <option value="operational_task">Tarefa operacional</option>
-          <option value="product_opportunity">Oportunidade de produto</option>
-          <option value="content_opportunity">Oportunidade de conteudo</option>
-        </select>
-        <input id="idea-priority-score" type="number" min="0" max="10" step="0.1" placeholder="Score" />
-        <button onclick="createIdea()">Registrar ideia</button>
-      </div>
+      <p style="color:#c7d2fe; font-size:0.95rem; line-height:1.6;">
+        O Hub mostra ideias já criadas e seu status. A criação de novas ideias deve ser feita pelo runtime externo.
+      </p>
       <div class="ideas-toolbar">
         <select id="idea-status-filter" onchange="loadHubIdeas()">
           <option value="">Todos os status</option>
@@ -424,26 +402,6 @@
     <div class="grid">
       <div class="card">
         <h2>Tarefas do hub</h2>
-        <div class="hub-create-grid">
-          <select id="hub-task-project"></select>
-          <input id="hub-task-title" type="text" placeholder="Titulo da tarefa" />
-          <select id="hub-task-type">
-            <option value="planning">Planning</option>
-            <option value="coding">Coding</option>
-            <option value="research">Research</option>
-            <option value="content">Content</option>
-            <option value="review">Review</option>
-            <option value="deploy">Deploy</option>
-          </select>
-          <select id="hub-task-priority-create">
-            <option value="medium">Media</option>
-            <option value="high">Alta</option>
-            <option value="critical">Critica</option>
-            <option value="low">Baixa</option>
-          </select>
-          <button onclick="createHubTask()">Criar tarefa</button>
-          <textarea id="hub-task-description" placeholder="Contexto resumido da tarefa do hub..."></textarea>
-        </div>
         <div class="hub-toolbar">
           <select id="hub-task-status-filter" onchange="loadHubManagedTasks()">
             <option value="">Todos os status</option>
@@ -708,24 +666,6 @@ function renderBusinessUnits() {
         <div class="project-meta">
           <span>Projetos vinculados: <b>${linkedProjects}</b></span>
         </div>
-        <div class="business-unit-editor">
-          <label>
-            Nome
-            <input id="bu-name-${unit.id}" type="text" value="${escHtml(unit.name)}" />
-          </label>
-          <label>
-            Slug
-            <input id="bu-slug-${unit.id}" type="text" value="${escHtml(unit.slug)}" />
-          </label>
-          <label>
-            Status
-            <select id="bu-status-${unit.id}">
-              ${renderSelectOptions(["active", "paused"], unit.status)}
-            </select>
-          </label>
-          <button onclick="saveBusinessUnit('${unit.id}')">Salvar BU</button>
-        </div>
-        <div class="business-unit-note" id="bu-note-${unit.id}"></div>
       </div>
     `;
   }).join('');
@@ -970,54 +910,9 @@ function renderIdeas() {
         </div>
       </div>
       <div class="idea-desc">${escHtml(idea.raw_input)}</div>
-      <div class="idea-editor">
-        <label>
-          Status
-          <select id="idea-status-${idea.id}">
-            ${renderSelectOptions(["new", "reviewing", "converted", "discarded"], idea.status)}
-          </select>
-        </label>
-        <label>
-          Classificacao
-          <select id="idea-classification-${idea.id}">
-            ${renderSelectOptions(["", "new_project", "experiment", "operational_task", "product_opportunity", "content_opportunity"], idea.classification || "")}
-          </select>
-        </label>
-        <button onclick="saveIdea('${idea.id}')">Salvar ideia</button>
-      </div>
-      ${idea.status !== "converted" ? `
-      <div class="idea-editor" style="margin-top:0.8rem;">
-        <label>
-          Business unit
-          <select id="idea-bu-${idea.id}">
-            ${renderBusinessUnitOptions(idea.business_unit_id || "")}
-          </select>
-        </label>
-        <label>
-          Tipo de projeto
-          <select id="idea-project-type-${idea.id}">
-            ${renderSelectOptions(["content", "ecommerce", "product", "automation", "lab", "internal_tool"], "content")}
-          </select>
-        </label>
-        <button onclick="convertIdeaToProject('${idea.id}')">Virar projeto</button>
-      </div>
-      <div class="idea-editor" style="margin-top:0.8rem;">
-        <label>
-          Projeto
-          <select id="idea-task-project-${idea.id}">
-            ${renderProjectOptions(idea.project_id || selectedProjectId || "")}
-          </select>
-        </label>
-        <label>
-          Tipo de tarefa
-          <select id="idea-task-type-${idea.id}">
-            ${renderSelectOptions(["planning", "research", "content", "review", "deploy", "coding"], "planning")}
-          </select>
-        </label>
-        <button onclick="convertIdeaToTask('${idea.id}')">Virar tarefa</button>
-      </div>` : ''}
-      <div class="idea-save-note" id="idea-note-${idea.id}">
-        ${idea.project_id ? `Projeto vinculado: <code>${escHtml(idea.project_id)}</code>` : 'Ainda sem projeto vinculado.'}
+      <div class="detail-summary">
+        ${idea.project_id ? `<span>Projeto vinculado: <code>${escHtml(idea.project_id)}</code></span>` : '<span>Sem projeto vinculado</span>'}
+        ${idea.business_unit_id ? `<span>BU: <code>${escHtml(idea.business_unit_id)}</code></span>` : ''}
       </div>
     </div>
   `).join('');
@@ -1055,27 +950,8 @@ function renderHubManagedTasks() {
         <span>Projeto: <code>${escHtml(task.project_id)}</code></span>
         <span>Tipo: <b>${escHtml(task.task_type)}</b></span>
         <span>Owner: ${escHtml(task.owner_name || task.owner_type || "nao definido")}</span>
+        <span>Prioridade: <b>${escHtml(task.priority)}</b></span>
       </div>
-      <div class="hub-task-editor">
-        <label>
-          Status
-          <select id="hub-task-status-${task.id}">
-            ${renderSelectOptions(["todo", "in_progress", "done", "blocked"], task.status)}
-          </select>
-        </label>
-        <label>
-          Prioridade
-          <select id="hub-task-priority-${task.id}">
-            ${renderSelectOptions(["critical", "high", "medium", "low"], task.priority)}
-          </select>
-        </label>
-        <label>
-          Responsavel
-          <input id="hub-task-owner-${task.id}" type="text" value="${escHtml(task.owner_name || "")}" />
-        </label>
-        <button onclick="saveHubTask('${task.id}')">Salvar tarefa</button>
-      </div>
-      <div class="hub-save-note" id="hub-task-note-${task.id}"></div>
     </div>
   `).join('');
 }
@@ -1104,12 +980,6 @@ function renderHubApprovals() {
         ${approval.task_id ? `<span>Tarefa: <code>${escHtml(approval.task_id)}</code></span>` : ""}
         ${approval.decided_by ? `<span>Decidido por: ${escHtml(approval.decided_by)}</span>` : ""}
       </div>
-      ${approval.status === "pending" ? `
-        <div class="approval-actions">
-          <button class="success" onclick="decideApproval('${approval.id}', 'approve')">Aprovar</button>
-          <button class="danger" onclick="decideApproval('${approval.id}', 'reject')">Rejeitar</button>
-        </div>
-      ` : ""}
       <div class="approval-note" id="approval-note-${approval.id}"></div>
     </div>
   `).join('');
@@ -1118,7 +988,7 @@ function renderHubApprovals() {
 function renderProjectMetricsPanel() {
   const el = document.getElementById("project-metrics-panel");
   if (!projectDetail) {
-    el.innerHTML = '<p style="color:#718096;font-size:0.85rem;">Selecione um projeto para visualizar e lancar metricas.</p>';
+    el.innerHTML = '<p style="color:#718096;font-size:0.85rem;">Selecione um projeto para visualizar metricas.</p>';
     return;
   }
 
@@ -1132,13 +1002,6 @@ function renderProjectMetricsPanel() {
         </div>
       </div>
       <div class="detail-list">${renderDetailItems(projectDetail.metrics, metric => `<div><strong>${escHtml(metric.metric_name)}</strong></div><div>${escHtml(metric.metric_value)} ${escHtml(metric.metric_unit || "")}</div>`)}</div>
-      <div class="metric-create-grid">
-        <input id="metric-name" type="text" placeholder="revenue_brl, videos_published..." />
-        <input id="metric-value" type="number" step="0.01" placeholder="valor" />
-        <input id="metric-unit" type="text" placeholder="BRL, count..." />
-        <button onclick="createProjectMetric('${project.id}')">Lancar metrica</button>
-      </div>
-      <div id="metric-save-note" class="save-note"></div>
     </div>
   `;
 }
@@ -1211,32 +1074,12 @@ function renderProjectDetail() {
         <span class="health-chip highlight">Proximo checkpoint: ${escHtml(summary.nextCheckpoint)}</span>
         <span class="health-chip">${escHtml(summary.stageLabel)}</span>
       </div>
-      <div class="editor-grid">
-        <label>
-          Status
-          <select id="detail-status">
-            ${renderSelectOptions(["active", "incubating", "paused", "idea", "archived"], project.status)}
-          </select>
-        </label>
-        <label>
-          Prioridade
-          <select id="detail-priority">
-            ${renderSelectOptions(["critical", "high", "medium", "low"], project.priority)}
-          </select>
-        </label>
-        <label>
-          Foco atual
-          <input id="detail-current-focus" type="text" value="${escHtml(project.current_focus || "")}" />
-        </label>
-        <label>
-          Proxima acao
-          <input id="detail-next-action" type="text" value="${escHtml(project.next_action || "")}" />
-        </label>
+      <div class="detail-summary">
+        <span>Status: <b>${escHtml(project.status)}</b></span>
+        <span>Prioridade: <b>${escHtml(project.priority)}</b></span>
+        ${project.current_focus ? `<span>Foco atual: ${escHtml(project.current_focus)}</span>` : ''}
+        ${project.next_action ? `<span>Proxima acao: ${escHtml(project.next_action)}</span>` : ''}
       </div>
-      <div class="editor-actions">
-        <button onclick="saveProjectDetail('${project.id}')">Salvar ajuste do projeto</button>
-      </div>
-      <div id="project-save-note" class="save-note"></div>
     </div>
     <div class="detail-grid">
       <div class="detail-panel">
@@ -1297,11 +1140,6 @@ function renderTasks() {
         ${t.branch_name ? `Branch: <code>${escHtml(t.branch_name)}</code>` : ''}
         ${t.pr_url ? `&nbsp; <a class="pr-link" href="${escHtml(t.pr_url)}" target="_blank">Ver PR</a>` : ''}
       </div>
-      ${t.status === 'awaiting_approval' ? `
-      <div class="task-actions">
-        <button class="success" onclick="approve('${t.task_id}')">Aprovar</button>
-        <button class="danger" onclick="reject('${t.task_id}')">Rejeitar</button>
-      </div>` : ''}
     </div>
   `).join('');
 }
@@ -1310,383 +1148,7 @@ function escHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-async function submitTask() {
-  const input = document.getElementById("task-input");
-  const val = input.value.trim();
-  if (!val) return;
-  input.value = "";
-  await fetch("/tasks", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({raw_input: val})
-  });
-  loadTasks();
-  loadHubOverview();
-  loadHubBusinessUnits();
-  loadHubActivity();
-  loadHubProjects();
-  loadHubIdeas();
-  loadHubManagedTasks();
-  loadHubApprovals();
-}
-
-document.getElementById("task-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") submitTask();
-});
-
-async function approve(taskId) {
-  await fetch(`/tasks/${taskId}/approve`, {method:"POST"});
-  loadTasks();
-  loadHubOverview();
-  loadHubBusinessUnits();
-  loadHubActivity();
-  loadHubProjects();
-  loadHubIdeas();
-  loadHubManagedTasks();
-  loadHubApprovals();
-}
-
-async function reject(taskId) {
-  await fetch(`/tasks/${taskId}/reject`, {method:"POST"});
-  loadTasks();
-  loadHubOverview();
-  loadHubBusinessUnits();
-  loadHubActivity();
-  loadHubProjects();
-  loadHubIdeas();
-  loadHubManagedTasks();
-  loadHubApprovals();
-}
-
-async function saveProjectDetail(projectId) {
-  const payload = {
-    status: document.getElementById("detail-status").value,
-    priority: document.getElementById("detail-priority").value,
-    current_focus: document.getElementById("detail-current-focus").value.trim(),
-    next_action: document.getElementById("detail-next-action").value.trim()
-  };
-  const response = await fetch(`/hub/projects/${projectId}`, {
-    method: "PATCH",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
-  });
-
-  const note = document.getElementById("project-save-note");
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel salvar agora.";
-    return;
-  }
-
-  note.textContent = "Projeto atualizado com sucesso.";
-  await loadHubProjects();
-  await loadProjectDetail(projectId);
-  await loadHubOverview();
-  await loadHubBusinessUnits();
-}
-
-async function createProjectMetric(projectId) {
-  const metricName = document.getElementById("metric-name").value.trim();
-  const metricValue = document.getElementById("metric-value").value.trim();
-  const metricUnit = document.getElementById("metric-unit").value.trim();
-  const note = document.getElementById("metric-save-note");
-
-  if (!metricName || !metricValue) return;
-
-  const response = await fetch("/hub/metrics", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      project_id: projectId,
-      metric_name: metricName,
-      metric_value: Number(metricValue),
-      metric_unit: metricUnit || null
-    })
-  });
-
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel registrar essa metrica agora.";
-    return;
-  }
-
-  document.getElementById("metric-name").value = "";
-  document.getElementById("metric-value").value = "";
-  document.getElementById("metric-unit").value = "";
-  note.textContent = "Metrica registrada com sucesso.";
-
-  await loadProjectDetail(projectId);
-  await loadHubBusinessUnits();
-  await loadHubOverview();
-}
-
-async function createBusinessUnit() {
-  const name = document.getElementById("bu-name").value.trim();
-  const slug = document.getElementById("bu-slug").value.trim();
-  const description = document.getElementById("bu-description").value.trim();
-  const status = document.getElementById("bu-status").value;
-
-  if (!name || !slug) return;
-
-  const response = await fetch("/hub/business-units", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ name, slug, description, status })
-  });
-
-  if (response.status !== 200) return;
-
-  document.getElementById("bu-name").value = "";
-  document.getElementById("bu-slug").value = "";
-  document.getElementById("bu-description").value = "";
-  document.getElementById("bu-status").value = "active";
-
-  await loadHubBusinessUnits();
-  await loadHubOverview();
-  if (selectedBusinessUnitId) {
-    await loadBusinessUnitDetail(selectedBusinessUnitId);
-  }
-}
-
-async function saveBusinessUnit(businessUnitId) {
-  const name = document.getElementById(`bu-name-${businessUnitId}`).value.trim();
-  const slug = document.getElementById(`bu-slug-${businessUnitId}`).value.trim();
-  const status = document.getElementById(`bu-status-${businessUnitId}`).value;
-  const note = document.getElementById(`bu-note-${businessUnitId}`);
-
-  const response = await fetch(`/hub/business-units/${businessUnitId}`, {
-    method: "PATCH",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ name, slug, status })
-  });
-
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel salvar essa business unit agora.";
-    return;
-  }
-
-  note.textContent = "Business unit atualizada com sucesso.";
-  await loadHubBusinessUnits();
-  await loadHubOverview();
-  if (selectedBusinessUnitId === businessUnitId) {
-    await loadBusinessUnitDetail(businessUnitId);
-  }
-}
-
-async function createHubTask() {
-  const projectId = document.getElementById("hub-task-project").value;
-  const title = document.getElementById("hub-task-title").value.trim();
-  const description = document.getElementById("hub-task-description").value.trim();
-  const taskType = document.getElementById("hub-task-type").value;
-  const priority = document.getElementById("hub-task-priority-create").value;
-
-  if (!projectId || !title) return;
-
-  const response = await fetch("/hub/tasks", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      project_id: projectId,
-      title,
-      description,
-      task_type: taskType,
-      priority,
-      status: "todo",
-      owner_type: "agent"
-    })
-  });
-
-  if (response.status !== 200) return;
-
-  document.getElementById("hub-task-title").value = "";
-  document.getElementById("hub-task-description").value = "";
-  document.getElementById("hub-task-type").value = "planning";
-  document.getElementById("hub-task-priority-create").value = "medium";
-
-  await loadHubManagedTasks();
-  await loadHubOverview();
-  if (selectedProjectId) {
-    await loadProjectDetail(selectedProjectId);
-  }
-}
-
-async function createIdea() {
-  const titleInput = document.getElementById("idea-title");
-  const rawInput = document.getElementById("idea-raw-input");
-  const classificationInput = document.getElementById("idea-classification");
-  const priorityScoreInput = document.getElementById("idea-priority-score");
-
-  const title = titleInput.value.trim();
-  const raw_input = rawInput.value.trim();
-  if (!title || !raw_input) return;
-
-  const payload = {
-    title,
-    raw_input,
-    source: "manual"
-  };
-
-  if (classificationInput.value) payload.classification = classificationInput.value;
-  if (priorityScoreInput.value.trim()) payload.priority_score = Number(priorityScoreInput.value);
-  if (selectedProjectId) payload.project_id = selectedProjectId;
-
-  const response = await fetch("/hub/ideas", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
-  });
-
-  if (response.status !== 200) return;
-
-  titleInput.value = "";
-  rawInput.value = "";
-  classificationInput.value = "";
-  priorityScoreInput.value = "";
-
-  await loadHubIdeas();
-  await loadHubOverview();
-  if (selectedProjectId) {
-    await loadProjectDetail(selectedProjectId);
-  }
-}
-
-async function saveIdea(ideaId) {
-  const payload = {
-    status: document.getElementById(`idea-status-${ideaId}`).value,
-    classification: document.getElementById(`idea-classification-${ideaId}`).value || null
-  };
-
-  const response = await fetch(`/hub/ideas/${ideaId}`, {
-    method: "PATCH",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
-  });
-
-  const note = document.getElementById(`idea-note-${ideaId}`);
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel salvar essa ideia agora.";
-    return;
-  }
-
-  note.textContent = "Ideia atualizada com sucesso.";
-  await loadHubIdeas();
-  await loadHubOverview();
-  if (selectedProjectId) {
-    await loadProjectDetail(selectedProjectId);
-  }
-}
-
-async function convertIdeaToProject(ideaId) {
-  const businessUnitId = document.getElementById(`idea-bu-${ideaId}`)?.value;
-  const projectType = document.getElementById(`idea-project-type-${ideaId}`)?.value || "content";
-  const note = document.getElementById(`idea-note-${ideaId}`);
-
-  if (!businessUnitId) {
-    note.textContent = "Escolha uma business unit antes de converter.";
-    return;
-  }
-
-  const response = await fetch(`/hub/ideas/${ideaId}/convert-to-project`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      business_unit_id: businessUnitId,
-      project_type: projectType
-    })
-  });
-
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel transformar essa ideia em projeto agora.";
-    return;
-  }
-
-  const payload = await response.json();
-  note.textContent = `Projeto criado: ${payload.project.name}`;
-  await loadHubBusinessUnits();
-  await loadHubProjects();
-  await loadHubIdeas();
-  await loadHubOverview();
-}
-
-async function convertIdeaToTask(ideaId) {
-  const projectId = document.getElementById(`idea-task-project-${ideaId}`)?.value;
-  const taskType = document.getElementById(`idea-task-type-${ideaId}`)?.value || "planning";
-  const note = document.getElementById(`idea-note-${ideaId}`);
-
-  if (!projectId) {
-    note.textContent = "Escolha um projeto antes de converter essa ideia em tarefa.";
-    return;
-  }
-
-  const response = await fetch(`/hub/ideas/${ideaId}/convert-to-task`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      project_id: projectId,
-      task_type: taskType
-    })
-  });
-
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel transformar essa ideia em tarefa agora.";
-    return;
-  }
-
-  const payload = await response.json();
-  note.textContent = `Tarefa criada: ${payload.task.title}`;
-  await loadHubIdeas();
-  await loadHubManagedTasks();
-  await loadHubOverview();
-  if (selectedProjectId) {
-    await loadProjectDetail(selectedProjectId);
-  }
-}
-
-async function saveHubTask(taskId) {
-  const response = await fetch(`/hub/tasks/${taskId}`, {
-    method: "PATCH",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      status: document.getElementById(`hub-task-status-${taskId}`).value,
-      priority: document.getElementById(`hub-task-priority-${taskId}`).value,
-      owner_name: document.getElementById(`hub-task-owner-${taskId}`).value.trim()
-    })
-  });
-
-  const note = document.getElementById(`hub-task-note-${taskId}`);
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel salvar essa tarefa agora.";
-    return;
-  }
-
-  note.textContent = "Tarefa atualizada com sucesso.";
-  await loadHubManagedTasks();
-  await loadHubOverview();
-  await loadHubBusinessUnits();
-  if (selectedProjectId) {
-    await loadProjectDetail(selectedProjectId);
-  }
-}
-
-async function decideApproval(approvalId, action) {
-  const response = await fetch(`/hub/approvals/${approvalId}/${action}`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({decided_by: "Ewerton Viggo"})
-  });
-
-  const note = document.getElementById(`approval-note-${approvalId}`);
-  if (response.status !== 200) {
-    note.textContent = "Nao foi possivel registrar essa decisao agora.";
-    return;
-  }
-
-  note.textContent = action === "approve" ? "Aprovacao registrada." : "Rejeicao registrada.";
-  await loadHubApprovals();
-  await loadHubOverview();
-  await loadHubBusinessUnits();
-  if (selectedProjectId) {
-    await loadProjectDetail(selectedProjectId);
-  }
-}
+// Dashboard is read-only. All interactive task creation and modification functions have been removed.
 
 loadTasks();
 loadHubOverview();

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ plan.title }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 2.5cm;
+      @top-center { content: element(header); }
+      @bottom-center { content: counter(page) " / " counter(pages); }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #fff;
+      color: #1e293b;
+      line-height: 1.75;
+      font-size: 11pt;
+    }
+    .container { max-width: 100%; }
+
+    /* COVER PAGE */
+    .cover {
+      page: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      color: #fff;
+      padding: 4rem;
+    }
+    .cover-badge {
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 0.5rem 1.25rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+    }
+    .cover h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+    .cover-subtitle {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      max-width: 500px;
+      margin-bottom: 3rem;
+    }
+    .cover-meta {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .cover-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cover-footer {
+      position: absolute;
+      bottom: 3rem;
+      font-size: 0.75rem;
+      color: #475569;
+    }
+
+    /* HEADER */
+    .header {
+      position: running(header);
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+    .header-logo {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .header-title {
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* TOC */
+    .toc {
+      page-break-after: always;
+      padding: 3rem 2rem;
+    }
+    .toc h1 {
+      font-size: 1.5rem;
+      color: #0f172a;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 3px solid #f59e0b;
+    }
+    .toc-list { list-style: none; }
+    .toc-list li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .toc-list a {
+      color: #1e293b;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    .toc-page {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    /* MAIN CONTENT */
+    .content {
+      padding: 3rem 2rem;
+    }
+    .content h1 {
+      font-size: 1.75rem;
+      color: #0f172a;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 3px solid #f59e0b;
+    }
+
+    /* SECTIONS */
+    .section {
+      margin-bottom: 2.5rem;
+      page-break-inside: avoid;
+    }
+    .section-number {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      background: #0f172a;
+      color: #fff;
+      border-radius: 8px;
+      text-align: center;
+      line-height: 32px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-right: 0.75rem;
+      vertical-align: middle;
+    }
+    .section h2 {
+      font-size: 1.25rem;
+      color: #0f172a;
+      display: inline;
+      vertical-align: middle;
+    }
+    .section-intro {
+      color: #475569;
+      font-size: 0.95rem;
+      margin: 1rem 0;
+      padding-left: 2.5rem;
+    }
+
+    /* LISTS */
+    .item-list {
+      list-style: none;
+      margin: 1rem 0;
+      padding-left: 2.5rem;
+    }
+    .item-list li {
+      padding: 0.75rem 0;
+      padding-left: 2rem;
+      position: relative;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .item-list li::before {
+      content: attr(data-num);
+      position: absolute;
+      left: 0;
+      top: 0.75rem;
+      width: 24px;
+      height: 24px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .item-title {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+    .item-desc {
+      color: #475569;
+      font-size: 0.9rem;
+    }
+
+    /* BOXES */
+    .box {
+      padding: 1.25rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      page-break-inside: avoid;
+    }
+    .box-tip {
+      background: #ecfdf5;
+      border-left: 4px solid #10b981;
+    }
+    .box-tip::before {
+      content: "💡 Dica";
+      display: block;
+      font-weight: 700;
+      color: #047857;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    .box-warning {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+    }
+    .box-warning::before {
+      content: "⚠️ Atenção";
+      display: block;
+      font-weight: 700;
+      color: #b45309;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    .box-info {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+    }
+    .box-info::before {
+      content: "ℹ️ Informação";
+      display: block;
+      font-weight: 700;
+      color: #1d4ed8;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    .box-content {
+      color: #1e293b;
+      font-size: 0.95rem;
+    }
+
+    /* CTA */
+    .cta-section {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      color: #fff;
+      border-radius: 12px;
+      padding: 2.5rem;
+      margin: 2rem 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .cta-section h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #f59e0b;
+    }
+    .cta-section p {
+      color: #cbd5e1;
+      margin-bottom: 1.5rem;
+    }
+    .cta-button {
+      display: inline-block;
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    /* FOOTER */
+    .footer {
+      position: running(footer);
+      width: 100%;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      padding: 0.5rem 0;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* PAGE NUMBERS */
+    @page {
+      counter-reset: page;
+    }
+    .page:not(.cover) {
+      counter-increment: page;
+    }
+
+    /* PRINT */
+    @media print {
+      .cover { min-height: 100vh; }
+      .section { page-break-inside: avoid; }
+      .box { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-badge">{{ plan.audience }}</div>
+    <h1>{{ plan.title }}</h1>
+    <p class="cover-subtitle">{{ plan.subtitle }}</p>
+    <div class="cover-meta">
+      <span>📄 Material Exclusivo</span>
+      <span>⭐ {{ plan.sections|length }} Seções</span>
+    </div>
+    <div class="cover-footer">© 2026 Todos os direitos reservados</div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h1>Sumário</h1>
+    <ul class="toc-list">
+      {% for section in plan.sections %}
+      <li>
+        <a href="#section-{{ loop.index }}">{{ loop.index }}. {{ section.heading }}</a>
+      </li>
+      {% endfor %}
+      {% if plan.call_to_action %}
+      <li>
+        <a href="#cta">Próximo Passo</a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">{{ plan.title|truncate(20) }}</div>
+    <div class="header-title">{{ plan.objective }}</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    {% for section in plan.sections %}
+    <div class="section" id="section-{{ loop.index }}">
+      <h2><span class="section-number">{{ loop.index }}</span>{{ section.heading }}</h2>
+      {% if section.summary %}
+      <p class="section-intro">{{ section.summary }}</p>
+      {% endif %}
+      {% if section.bullets %}
+      <ul class="item-list">
+        {% for bullet in section.bullets %}
+        <li data-num="{{ loop.index }}">
+          <div class="item-title">{{ bullet }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if plan.call_to_action %}
+    <div class="cta-section" id="cta">
+      <h3>Próximo Passo</h3>
+      <p>{{ plan.call_to_action }}</p>
+      <a href="#" class="cta-button">Quero Agora →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    {{ plan.title }} — Página
+  </div>
+
+</body>
+</html>

@@ -29,21 +29,50 @@ Always respond with a single JSON object:
   "concerns": [<str>, ...]
 }"""
 
+_SYSTEM_LOCAL = """You are the Implementer Agent for Monarch AI.
+
+You write production-quality code. You have NO tools available.
+Instead, output ALL files as part of your JSON response.
+
+Respond with a single JSON object:
+{
+  "confidence": <float 0-1>,
+  "files": [
+    {"path": "relative/path/to/file.py", "content": "<full file content>"},
+    ...
+  ],
+  "files_written": [{"path": <str>, "description": <str>}],
+  "summary": <str>,
+  "concerns": [<str>, ...]
+}
+
+Include EVERY file needed. Write complete, production-ready file contents.
+Do not use placeholders or truncate content."""
+
 
 class ImplementerAgent(BaseAgent):
     name = "implementer"
+    display_name = "Fernanda - Implementação"
     model = config.implementer_model or SONNET_MODEL
     max_tokens = config.implementer_max_tokens
     system_prompt = _SYSTEM
 
     def __init__(self) -> None:
         super().__init__()
-        self._github = GitHubTools()
+        self._github = GitHubTools() if config.github_enabled else None
         self._fs = FsTools()
 
     @property
+    def system_prompt(self) -> str:  # type: ignore[override]
+        return _SYSTEM_LOCAL if config.local_mode else _SYSTEM
+
+    @property
     def tools(self) -> list[dict[str, Any]]:
-        return self._github.as_tools_schema()
+        if config.local_mode:
+            return []  # local mode: no tools, Claude outputs files as JSON
+        if self._github:
+            return self._github.as_tools_schema()
+        return self._fs.as_tools_schema()
 
     def _trim_text(self, value: Any, limit: int = 400) -> str:
         text = str(value or "").strip()
@@ -127,8 +156,20 @@ class ImplementerAgent(BaseAgent):
         branch = task.branch_name or "main"
         summarized_arch = self._summarize_architecture(arch)
         summarized_plan = self._summarize_plan(plan)
+
+        if config.local_mode:
+            output_dir = f"output/{task.task_id}"
+            return (
+                f"Implement the following task. Output all files to: {output_dir}/\n\n"
+                f"Original request: {task.raw_input}\n\n"
+                f"Architecture summary:\n{json.dumps(summarized_arch, indent=2)}\n\n"
+                f"Implementation plan summary:\n{json.dumps(summarized_plan, indent=2)}\n\n"
+                "Return the complete JSON with all file contents as instructed."
+            )
+
+        location = f"on branch '{branch}'" if self._github else "to the local filesystem"
         return (
-            f"Implement the following task on branch '{branch}'.\n\n"
+            f"Implement the following task {location}.\n\n"
             f"Original request: {task.raw_input}\n\n"
             "Constraints:\n"
             "- Prefer the smallest safe implementation slice first.\n"
@@ -142,28 +183,60 @@ class ImplementerAgent(BaseAgent):
 
     async def execute_tool(self, name: str, inputs: dict[str, Any]) -> Any:
         branch = inputs.pop("branch", None)
-        match name:
-            case "read_file":
-                return self._github.read_file(**inputs)
-            case "list_files":
-                return self._github.list_files(**inputs)
-            case "write_file":
-                self._fs.write(inputs["path"], inputs["content"])
-                if branch:
-                    inputs["branch"] = branch
-                self._github.write_file(**inputs)
-                return f"Written: {inputs['path']}"
-            case "create_branch":
-                self._github.create_branch(**inputs)
-                return f"Branch created: {inputs['branch_name']}"
-            case _:
-                raise NotImplementedError(f"Tool not supported: {name}")
+        inputs.pop("ref", None)
+        inputs.pop("commit_message", None)
+        if self._github:
+            # GitHub mode
+            match name:
+                case "read_file":
+                    return self._github.read_file(**inputs)
+                case "list_files":
+                    return self._github.list_files(**inputs)
+                case "write_file":
+                    self._fs.write(inputs["path"], inputs["content"])
+                    if branch:
+                        inputs["branch"] = branch
+                    self._github.write_file(**inputs)
+                    return f"Written: {inputs['path']}"
+                case "create_branch":
+                    self._github.create_branch(**inputs)
+                    return f"Branch created: {inputs['branch_name']}"
+                case _:
+                    raise NotImplementedError(f"Tool not supported: {name}")
+        else:
+            # Local-only mode
+            match name:
+                case "read_file":
+                    return self._fs.read(inputs["path"])
+                case "list_files":
+                    return self._fs.list(inputs.get("directory", ""))
+                case "write_file":
+                    self._fs.write(inputs["path"], inputs["content"])
+                    return f"Written locally: {inputs['path']}"
+                case _:
+                    raise NotImplementedError(f"Tool not supported in local mode: {name}")
 
     async def run(self, task: Task):
         result = await super().run(task)
+
+        if config.local_mode:
+            # Write files returned as JSON content to local filesystem
+            output_dir = f"output/{task.task_id}"
+            fs = FsTools(workdir=output_dir)
+            written = []
+            for file_entry in result.output.get("files", []):
+                path = file_entry.get("path", "")
+                content = file_entry.get("content", "")
+                if path and content:
+                    fs.write(path, content)
+                    written.append({"path": f"{output_dir}/{path}", "description": "written"})
+                    logger.info("[%s] Wrote %s/%s", self.label, output_dir, path)
+            result.output["files_written"] = written or result.output.get("files_written", [])
+            logger.info("[%s] Local output in: %s", self.label, output_dir)
+
         files = result.output.get("files_written", [])
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="implementation_complete",
             detail=f"files_written={len(files)}",
         )

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from achadinhos.models import ScoredCandidate
+from typing import Any
 
 from tiktok_shop.models import OfferAngle, ValidationPlan, VideoScript
 
 
 def build_offer_angle(
-    candidate: ScoredCandidate,
+    candidate: Any,
     *,
     audience: str = "compradores por impulso com interesse visual",
 ) -> OfferAngle:
     return OfferAngle(
         title=f"Oferta inicial para {candidate.title}",
-        problem="A maioria das ofertas parece genérica e não mostra beneficio rapido.",
+        problem="A maioria das ofertas parece generica e nao mostra beneficio rapido.",
         promise=(
             f"Apresentar {candidate.title} como uma solucao simples, visual e facil de entender "
             f"em poucos segundos."
@@ -22,7 +22,7 @@ def build_offer_angle(
     )
 
 
-def build_video_script(candidate: ScoredCandidate, angle: OfferAngle) -> VideoScript:
+def build_video_script(candidate: Any, angle: OfferAngle) -> VideoScript:
     return VideoScript(
         hook=f"Voce precisa ver como {candidate.title.lower()} chama atencao em segundos.",
         beats=[
@@ -34,7 +34,7 @@ def build_video_script(candidate: ScoredCandidate, angle: OfferAngle) -> VideoSc
     )
 
 
-def build_validation_plan(candidate: ScoredCandidate) -> ValidationPlan:
+def build_validation_plan(candidate: Any) -> ValidationPlan:
     angle = build_offer_angle(candidate)
     script = build_video_script(candidate, angle)
     checklist = [

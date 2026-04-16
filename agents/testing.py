@@ -29,6 +29,7 @@ Respond with a single JSON object:
 
 class TestingAgent(BaseAgent):
     name = "testing"
+    display_name = "Gabriel - Testes"
     model = SONNET_MODEL
     system_prompt = _SYSTEM
 
@@ -49,7 +50,7 @@ class TestingAgent(BaseAgent):
         task.test_results = result.output
         all_passed = result.output.get("all_passed", False)
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="testing_complete",
             detail=f"all_passed={all_passed}",
         )

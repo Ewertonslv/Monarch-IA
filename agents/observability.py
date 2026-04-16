@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Any
 
-from agents.base import BaseAgent, HAIKU_MODEL
+from agents.base import BaseAgent, SONNET_MODEL
 from core.task import Task
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,8 @@ Respond with a single JSON object:
 
 class ObservabilityAgent(BaseAgent):
     name = "observability"
-    model = HAIKU_MODEL
+    display_name = "Lucas - Observabilidade"
+    model = SONNET_MODEL
     system_prompt = _SYSTEM
 
     async def build_user_message(self, task: Task) -> str:
@@ -47,7 +48,7 @@ class ObservabilityAgent(BaseAgent):
         result = await super().run(task)
         metrics_count = len(result.output.get("metrics_to_add", []))
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="observability_complete",
             detail=f"metrics={metrics_count} alerts={len(result.output.get('alerts_to_configure', []))}",
         )

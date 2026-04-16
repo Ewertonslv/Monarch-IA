@@ -1,0 +1,42 @@
+# Cache
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated output
+apps/pdf-factory/output/
+
+# Legacy (use canonical paths)
+whatsapp_notion_bot/
+interfaces/web/
+deploy/
+monarch_phase1/
+monarch_ai.egg-info/
+
+# Binary/docs (not relevant for code)
+*.docx
+*.pdf
+*.xlsx
+*.pptx
+*.zip
+*.tar.gz
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
