@@ -5,6 +5,7 @@ from app.db.session import AsyncSessionLocal
 from app.models.business_unit import BusinessUnit
 from app.models.project import Project
 from app.models.project_metric import ProjectMetric
+from app.models.roadmap_item import RoadmapItem
 from app.models.task import Task
 
 BUSINESS_UNITS = [
@@ -153,30 +154,63 @@ PROJECTS = [
 TASKS = [
     {
         "project_slug": "monarch-ai",
-        "title": "Definir backlog da fase 1",
-        "description": "Quebrar a fase 1 do monarch hub em entregas executaveis.",
-        "task_type": "planning",
+        "title": "Fechar fase 1 operacional do Monarch AI",
+        "description": "Concluir cadastros centrais, dashboard, pipeline multiagente estavel, execucao persistida e base confiavel para os demais projetos.",
+        "task_type": "coding",
         "status": "in_progress",
         "priority": "critical",
         "owner_type": "agent",
-        "owner_name": "planner",
+        "owner_name": "monarch_builder",
+        "approval_required": False,
+    },
+    {
+        "project_slug": "whatsapp-notion-bot",
+        "title": "Levar WhatsApp Notion Bot para operacao completa",
+        "description": "Finalizar deploy, webhook, persistencia, observabilidade e fluxo ponta a ponta de registro de gastos em producao.",
+        "task_type": "deploy",
+        "status": "todo",
+        "priority": "high",
+        "owner_type": "agent",
+        "owner_name": "ops_bot",
+        "approval_required": False,
+    },
+    {
+        "project_slug": "pdf-factory",
+        "title": "Implementar MVP operacional do PDF Factory",
+        "description": "Criar pipeline que recebe um briefing, gera estrutura, produz PDF final e organiza o ativo para venda.",
+        "task_type": "coding",
+        "status": "todo",
+        "priority": "high",
+        "owner_type": "agent",
+        "owner_name": "product_builder",
+        "approval_required": False,
+    },
+    {
+        "project_slug": "instagram-automation",
+        "title": "Implementar fluxo seguro do Instagram Automation",
+        "description": "Separar pesquisa, fila de conteudo, aprovacao e publicacao/preparacao assistida em modulos claros.",
+        "task_type": "coding",
+        "status": "todo",
+        "priority": "high",
+        "owner_type": "agent",
+        "owner_name": "growth_automation",
         "approval_required": False,
     },
     {
         "project_slug": "canal-dark",
-        "title": "Escolher nicho inicial",
-        "description": "Selecionar nicho principal e formato do canal dark.",
+        "title": "Implementar maquina inicial do Canal Dark",
+        "description": "Definir nicho, produzir backlog inicial e montar pipeline de pauta, roteiro, producao e publicacao.",
         "task_type": "research",
         "status": "todo",
         "priority": "high",
-        "owner_type": "human",
-        "owner_name": "ewerton",
-        "approval_required": True,
+        "owner_type": "agent",
+        "owner_name": "content_operator",
+        "approval_required": False,
     },
     {
         "project_slug": "achadinhos",
-        "title": "Definir criterios de produto vencedor",
-        "description": "Mapear sinais de margem, apelo e potencial de viralizacao.",
+        "title": "Implementar sistema de descoberta do Achadinhos",
+        "description": "Montar fluxo de coleta, catalogacao, scoring e shortlist de produtos fisicos com potencial de venda.",
         "task_type": "research",
         "status": "todo",
         "priority": "high",
@@ -184,16 +218,38 @@ TASKS = [
         "owner_name": "offer_hunter",
         "approval_required": False,
     },
+    {
+        "project_slug": "tiktok-shop",
+        "title": "Implementar operacao inicial do TikTok Shop",
+        "description": "Conectar selecao de produtos, conteudo e oferta em uma rotina minima de validacao comercial.",
+        "task_type": "deploy",
+        "status": "todo",
+        "priority": "high",
+        "owner_type": "agent",
+        "owner_name": "commerce_operator",
+        "approval_required": False,
+    },
+    {
+        "project_slug": "solo-leveling-lab",
+        "title": "Transformar Solo Leveling Lab em experimento executavel",
+        "description": "Definir um experimento autoral concreto, o entregavel inicial e o pipeline minimo para produzi-lo.",
+        "task_type": "planning",
+        "status": "todo",
+        "priority": "medium",
+        "owner_type": "agent",
+        "owner_name": "creative_lab",
+        "approval_required": False,
+    },
 ]
 
 APPROVALS = [
     {
-        "project_slug": "canal-dark",
-        "task_title": "Escolher nicho inicial",
-        "title": "Aprovar nicho inicial do Canal Dark",
-        "summary": "Escolher o primeiro nicho da operacao antes de partir para roteiros e producao.",
+        "project_slug": "monarch-ai",
+        "task_title": "Fechar fase 1 operacional do Monarch AI",
+        "title": "Aprovar escopo da fase 1 do Monarch AI",
+        "summary": "Validar que o Monarch AI sera a base operacional antes de acelerar as demais frentes.",
         "status": "pending",
-    }
+    },
 ]
 
 PROJECT_METRICS = [
@@ -214,6 +270,81 @@ PROJECT_METRICS = [
         "metric_name": "products_tested",
         "metric_value": 24,
         "metric_unit": "count",
+    },
+]
+
+ROADMAP_ITEMS = [
+    {
+        "project_slug": "monarch-ai",
+        "title": "Sistema operacional da operacao",
+        "description": "Objetivo final: transformar o Monarch AI no centro de projetos, tarefas, aprovacoes, execucoes e agentes. MVP: Hub funcional, pipeline estavel, persistencia confiavel e deploy reproduzivel. Dependencias: nenhuma. Pronto quando: cadastros centrais, dashboard, aprovacoes e execucao multiagente funcionarem sem travar.",
+        "phase": "foundation",
+        "status": "in_progress",
+        "priority": "critical",
+        "order_index": 10,
+    },
+    {
+        "project_slug": "whatsapp-notion-bot",
+        "title": "Operacao ponta a ponta no WhatsApp",
+        "description": "Objetivo final: receber mensagem, classificar, registrar no Notion e manter logs confiaveis. MVP: webhook ativo, fluxo real de gastos funcionando em producao e observabilidade minima. Dependencias: infra pronta e deploy consistente. Pronto quando: gasto enviado via WhatsApp cair no Notion com confiabilidade operacional.",
+        "phase": "delivery",
+        "status": "planned",
+        "priority": "high",
+        "order_index": 20,
+    },
+    {
+        "project_slug": "pdf-factory",
+        "title": "Pipeline de ativos digitais vendaveis",
+        "description": "Objetivo final: transformar briefs em PDFs comercializaveis. MVP: uma linha de produto com template fixo, geracao padronizada e arquivo final organizado. Dependencias: Monarch AI estavel. Pronto quando: um briefing gerar um PDF final pronto para venda ou validacao comercial.",
+        "phase": "mvp",
+        "status": "planned",
+        "priority": "high",
+        "order_index": 30,
+    },
+    {
+        "project_slug": "instagram-automation",
+        "title": "Automacao segura de operacao no Instagram",
+        "description": "Objetivo final: modularizar pesquisa, fila, aprovacao e publicacao assistida. MVP: pesquisa + geracao + fila de posts em fluxo seguro. Dependencias: base interna estavel e regras claras de automacao. Pronto quando: houver um pipeline modular reutilizavel para operar conteudo sem improviso manual.",
+        "phase": "mvp",
+        "status": "planned",
+        "priority": "high",
+        "order_index": 40,
+    },
+    {
+        "project_slug": "canal-dark",
+        "title": "Maquina de conteudo dark com nicho definido",
+        "description": "Objetivo final: operar conteudo dark com pauta, roteiro, producao e distribuicao. MVP: um nicho principal, backlog inicial e primeiras pecas produzidas pelo fluxo novo. Dependencias: reaproveitamento parcial de automacoes de conteudo. Pronto quando: o canal tiver pipeline repetivel e primeiras publicacoes produzidas dentro dele.",
+        "phase": "mvp",
+        "status": "planned",
+        "priority": "high",
+        "order_index": 50,
+    },
+    {
+        "project_slug": "achadinhos",
+        "title": "Motor de descoberta e scoring de produtos",
+        "description": "Objetivo final: encontrar e priorizar produtos fisicos com potencial comercial. MVP: catalogacao, criterios de analise e shortlist inicial. Dependencias: nenhuma tecnica forte. Pronto quando: houver fluxo claro para captar, pontuar e indicar produtos vencedores.",
+        "phase": "discovery_to_mvp",
+        "status": "planned",
+        "priority": "high",
+        "order_index": 60,
+    },
+    {
+        "project_slug": "tiktok-shop",
+        "title": "Operacao comercial inicial de TikTok Shop",
+        "description": "Objetivo final: conectar produto, conteudo, oferta e validacao comercial. MVP: um produto validado em ciclo minimo de venda. Dependencias: Achadinhos. Pronto quando: houver um fluxo comercial minimo com produto selecionado, conteudo produzido e validacao de oferta.",
+        "phase": "go_to_market",
+        "status": "planned",
+        "priority": "high",
+        "order_index": 70,
+    },
+    {
+        "project_slug": "solo-leveling-lab",
+        "title": "Experimento autoral fechado e executavel",
+        "description": "Objetivo final: transformar o lab em experimento criativo com entregavel concreto. MVP: um experimento definido com objetivo, formato e pipeline minimo de producao. Dependencias: baixa prioridade frente as frentes comerciais. Pronto quando: existir um experimento autoral completo, com escopo e primeiro entregavel produzido.",
+        "phase": "lab",
+        "status": "planned",
+        "priority": "medium",
+        "order_index": 80,
     },
 ]
 
@@ -331,6 +462,29 @@ async def seed_initial_data() -> None:
                     metric_name=metric_data["metric_name"],
                     metric_value=metric_data["metric_value"],
                     metric_unit=metric_data["metric_unit"],
+                )
+            )
+
+        await session.commit()
+
+        roadmap_result = await session.execute(select(RoadmapItem.title, RoadmapItem.project_id))
+        existing_roadmap_items = {(title, project_id) for title, project_id in roadmap_result.all()}
+
+        for item_data in ROADMAP_ITEMS:
+            project = projects_by_slug[item_data["project_slug"]]
+            identity = (item_data["title"], project.id)
+            if identity in existing_roadmap_items:
+                continue
+
+            session.add(
+                RoadmapItem(
+                    project_id=project.id,
+                    title=item_data["title"],
+                    description=item_data["description"],
+                    phase=item_data["phase"],
+                    status=item_data["status"],
+                    priority=item_data["priority"],
+                    order_index=item_data["order_index"],
                 )
             )
 
