@@ -47,7 +47,30 @@ class SlidingWindowRateLimiter:
         return True
 
 
+class SlidingWindowDeduper:
+    def __init__(self, window_seconds: int) -> None:
+        self.window_seconds = window_seconds
+        self._seen_at: dict[str, float] = {}
+
+    def register(self, key: str | None) -> bool:
+        if not key:
+            return False
+
+        now = time.monotonic()
+        cutoff = now - self.window_seconds
+        self._seen_at = {
+            seen_key: seen_at for seen_key, seen_at in self._seen_at.items() if seen_at >= cutoff
+        }
+
+        if key in self._seen_at:
+            return True
+
+        self._seen_at[key] = now
+        return False
+
+
 _webhook_limiter = SlidingWindowRateLimiter(max_requests=60, window_seconds=60)
+_webhook_deduper = SlidingWindowDeduper(window_seconds=300)
 
 
 def _normalize_phone(phone: str) -> str:
@@ -105,6 +128,39 @@ def _extract_text(payload: dict[str, Any]) -> str | None:
                 message_obj.get("text"),
                 message_obj.get("body"),
                 message_obj.get("conversation"),
+            ]
+        )
+
+    for candidate in candidates:
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+    return None
+
+
+def _extract_message_id(payload: dict[str, Any]) -> str | None:
+    candidates = [
+        payload.get("messageId"),
+        payload.get("id"),
+        payload.get("msgId"),
+    ]
+
+    text_obj = payload.get("text")
+    if isinstance(text_obj, dict):
+        candidates.extend(
+            [
+                text_obj.get("messageId"),
+                text_obj.get("id"),
+                text_obj.get("msgId"),
+            ]
+        )
+
+    message_obj = payload.get("message")
+    if isinstance(message_obj, dict):
+        candidates.extend(
+            [
+                message_obj.get("id"),
+                message_obj.get("messageId"),
+                message_obj.get("msgId"),
             ]
         )
 
@@ -190,6 +246,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         payload = await request.json()
         sender_phone = _extract_phone(payload)
         message_text = _extract_text(payload)
+        message_id = _extract_message_id(payload)
         app_settings = request.app.state.settings
 
         if not sender_phone or not message_text:
@@ -199,6 +256,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if _normalize_phone(app_settings.my_phone_number) != sender_phone:
             logger.info("Mensagem ignorada para remetente nao autorizado: %s", sender_phone)
             return {"status": "ignored", "reason": "sender_not_allowed"}
+
+        if _webhook_deduper.register(message_id):
+            logger.info("Mensagem duplicada ignorada. telefone=%s message_id=%s", sender_phone, message_id)
+            return {"status": "ignored", "reason": "duplicate_message"}
 
         try:
             expense = await request.app.state.classifier.classify(message_text)
