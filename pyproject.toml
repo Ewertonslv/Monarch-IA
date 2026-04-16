@@ -44,6 +44,8 @@ testpaths = [
     "apps/instagram-automation/tests",
     "apps/achadinhos/tests",
     "apps/tiktok-shop/tests",
+    "apps/canal-dark/tests",
+    "apps/solo-leveling-lab/tests",
 ]
 
 [tool.ruff]
