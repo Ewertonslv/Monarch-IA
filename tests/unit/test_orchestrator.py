@@ -116,3 +116,32 @@ async def test_orchestrator_discarded_on_rejection(db):
         result = await orch.run(task)
 
     assert result.status == TaskStatus.DISCARDED
+
+
+@pytest.mark.asyncio
+async def test_request_approval_persists_core_approval_id(db):
+    orch = Orchestrator(db)
+    task = Task(raw_input="aprovar tarefa")
+    await db.save_task(task)
+    original_get_task = db.get_task
+
+    async def _fake_sync(task_obj, stage):
+        task_obj.current_core_approval_id = "approval-123"
+
+    async def _fake_get_task(task_id):
+        fresh = await original_get_task(task_id)
+        assert fresh is not None
+        fresh.status = TaskStatus.RUNNING
+        return fresh
+
+    with (
+        patch.object(orch, "_sync_approval_request", new=AsyncMock(side_effect=_fake_sync)),
+        patch("core.orchestrator.asyncio.sleep", new=AsyncMock()),
+        patch.object(db, "get_task", new=AsyncMock(side_effect=_fake_get_task)),
+    ):
+        approved = await orch._request_approval(task, "post_planning")
+
+    persisted = await db.get_task(task.task_id)
+    assert approved is True
+    assert persisted is not None
+    assert persisted.current_core_approval_id == "approval-123"
