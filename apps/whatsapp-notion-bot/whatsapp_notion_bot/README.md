@@ -87,6 +87,12 @@ Resposta esperada no WhatsApp:
 4. A despesa e criada no banco do Notion.
 5. Uma confirmacao e enviada ao usuario pelo WhatsApp.
 
+Protecoes atuais:
+
+- limite de taxa por IP no webhook
+- filtro de remetente autorizado
+- deduplicacao basica por `messageId` para evitar gasto em dobro
+
 ## Testes
 
 Os testes nao fazem chamadas reais para APIs externas.
