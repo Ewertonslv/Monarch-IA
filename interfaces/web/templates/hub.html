@@ -102,8 +102,10 @@
       color: #e2e8f0;
       font-size: 0.88rem;
     }
-    .business-unit-editor { display: grid; grid-template-columns: 1fr 1fr 0.8fr auto; gap: 0.7rem; align-items: end; margin-top: 0.8rem; }
-    .business-unit-editor label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem; color: #8ea1c2; }
+    .business-unit-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.8fr) auto; gap: 0.7rem; align-items: end; margin-top: 0.8rem; }
+    .business-unit-editor > * { min-width: 0; }
+    .business-unit-editor label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem; color: #8ea1c2; min-width: 0; }
+    .business-unit-editor button { white-space: nowrap; }
     .business-unit-note { margin-top: 0.7rem; font-size: 0.78rem; color: #94a3b8; min-height: 1rem; }
     .ideas-create-grid { display: grid; grid-template-columns: 1.1fr 1.3fr 0.8fr 0.7fr auto; gap: 0.8rem; margin-bottom: 1rem; align-items: start; }
     .ideas-create-grid textarea { min-height: 74px; resize: vertical; }
@@ -136,6 +138,7 @@
     #ws-status.connected { background: #065f46; color: #6ee7b7; }
     #ws-status.disconnected { background: #7f1d1d; color: #fca5a5; }
     code { font-family: "Consolas", monospace; color: #c4b5fd; }
+    @media (max-width: 1200px) { .business-unit-editor { grid-template-columns: 1fr; } .business-unit-editor button { width: 100%; } }
     @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .projects-grid, .business-units-grid, .ideas-grid, .hub-grid { grid-template-columns: 1fr; } .detail-grid { grid-template-columns: 1fr; } .editor-grid, .ideas-create-grid, .idea-editor, .hub-create-grid, .hub-task-editor, .business-unit-create-grid, .business-unit-editor, .metric-create-grid { grid-template-columns: 1fr; } }
     @media (max-width: 640px) { header { padding: 1rem; } .input-row { flex-direction: column; } .stats-grid { grid-template-columns: 1fr; } }
   </style>
