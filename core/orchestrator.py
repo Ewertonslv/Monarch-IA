@@ -82,6 +82,7 @@ class Orchestrator:
         task.add_history(agent="orchestrator", action="awaiting_approval", detail=stage)
         await self.db.update_task(task)
         await self._sync_approval_request(task, stage)
+        await self.db.update_task(task)
         logger.info("[orchestrator] Task %s awaiting approval at stage: %s", task.task_id, stage)
 
         # Send Telegram notification with approve/reject buttons
@@ -134,6 +135,7 @@ class Orchestrator:
         task.status = TaskStatus.RUNNING
         await self.db.save_task(task)
         await self._sync_task_started(task)
+        await self.db.update_task(task)
         logger.info("[orchestrator] Starting pipeline for %s", task.task_id)
 
         try:
@@ -192,6 +194,7 @@ class Orchestrator:
                     head=task.branch_name,
                 )
                 task.add_history(agent="orchestrator", action="pr_created", detail=task.pr_url)
+                await self.db.update_task(task)
 
             await self._run_agent("testing", lambda: TestingAgent().run(task))
             await self._run_agent("reviewer", lambda: ReviewerAgent().run(task))
