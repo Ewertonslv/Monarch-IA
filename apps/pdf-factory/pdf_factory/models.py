@@ -11,11 +11,12 @@ class BriefInput(BaseModel):
     format_hint: str = Field(default="guia")
     key_points: list[str] = Field(default_factory=list)
     call_to_action: str | None = None
+    sections: list[DocumentSection] | None = None
 
 
 class DocumentSection(BaseModel):
     heading: str
-    summary: str
+    summary: str | None = None
     bullets: list[str] = Field(default_factory=list)
 
 

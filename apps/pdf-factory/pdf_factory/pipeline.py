@@ -19,20 +19,23 @@ def slugify(value: str) -> str:
 
 
 def build_document_plan(brief: BriefInput) -> DocumentPlan:
-    points = list(brief.key_points)
-    sections: list[DocumentSection] = []
+    if brief.sections:
+        sections = brief.sections
+    else:
+        points = list(brief.key_points)
+        sections = []
 
-    for index, heading in enumerate(DEFAULT_SECTION_HEADINGS):
-        section_points = points[index:: len(DEFAULT_SECTION_HEADINGS)] or [
-            f"Aplicar {brief.objective.lower()} com foco em {brief.audience.lower()}."
-        ]
-        sections.append(
-            DocumentSection(
-                heading=heading,
-                summary=_build_section_summary(brief, heading),
-                bullets=section_points[:4],
+        for index, heading in enumerate(DEFAULT_SECTION_HEADINGS):
+            section_points = points[index:: len(DEFAULT_SECTION_HEADINGS)] or [
+                f"Aplicar {brief.objective.lower()} com foco em {brief.audience.lower()}."
+            ]
+            sections.append(
+                DocumentSection(
+                    heading=heading,
+                    summary=f"{heading} pensado para um material em tom {brief.tone.lower()}, orientado a {brief.audience.lower()} e focado em {brief.objective.lower()}.",
+                    bullets=section_points[:4],
+                )
             )
-        )
 
     subtitle = (
         f"{brief.format_hint.title()} para {brief.audience.lower()} com foco em {brief.objective.lower()}."
@@ -88,11 +91,4 @@ def render_markdown(plan: DocumentPlan) -> str:
 def build_output_filename(plan: DocumentPlan, extension: str = "md") -> str:
     safe_extension = extension.strip(".").lower() or "md"
     return f"{plan.slug}.{safe_extension}"
-
-
-def _build_section_summary(brief: BriefInput, heading: str) -> str:
-    return (
-        f"{heading} pensado para um material em tom {brief.tone.lower()}, "
-        f"orientado a {brief.audience.lower()} e focado em {brief.objective.lower()}."
-    )
 

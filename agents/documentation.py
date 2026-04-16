@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Any
 
-from agents.base import BaseAgent, HAIKU_MODEL
+from agents.base import BaseAgent, SONNET_MODEL
 from core.task import Task
 from tools.github_tools import GitHubTools
 
@@ -32,7 +32,8 @@ Respond with a single JSON object:
 
 class DocumentationAgent(BaseAgent):
     name = "documentation"
-    model = HAIKU_MODEL
+    display_name = "Karla - Documentação"
+    model = SONNET_MODEL
     system_prompt = _SYSTEM
 
     def __init__(self) -> None:
@@ -53,7 +54,7 @@ class DocumentationAgent(BaseAgent):
     async def run(self, task: Task):
         result = await super().run(task)
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="documentation_complete",
             detail=f"changelog_entry={'yes' if result.output.get('changelog_entry') else 'no'}",
         )

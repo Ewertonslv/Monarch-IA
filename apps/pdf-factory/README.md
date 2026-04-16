@@ -1,24 +1,23 @@
 # PDF Factory
 
-Pipeline local para transformar um briefing em um ativo digital estruturado e exportavel.
+CLI para gerar documentos profissionais: Markdown, HTML e PDF.
 
-## Escopo atual
+## Uso
 
-MVP inicial:
+```bash
+pip install -r requirements.txt
+python -m pdf_factory run --title "Titulo" --audience "publico"
+python -m pdf_factory run-file briefing.json
+```
 
-- receber um briefing estruturado
-- gerar um plano de documento
-- renderizar o ativo em Markdown
-- definir nome de saida consistente
+## Templates
 
-## Estrutura
+| Template | Estilo |
+|---|---|
+| `minimal` | Clean, roxo/branco |
+| `sales` | Quente, laranja/serifado |
+| `dark` | Dark mode |
 
-- `pdf_factory/models.py`: modelos de entrada e saida
-- `pdf_factory/pipeline.py`: pipeline principal
-- `tests/test_pipeline.py`: testes unitarios do fluxo base
+## Formatos
 
-## Proximo passo
-
-- adicionar templates por nicho
-- gerar HTML/PDF a partir do Markdown
-- acoplar esse fluxo ao Monarch AI
+`--output-format md|html|pdf|all`

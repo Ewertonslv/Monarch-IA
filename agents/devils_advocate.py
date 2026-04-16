@@ -1,4 +1,4 @@
-from agents.base import BaseAgent, OPUS_MODEL
+from agents.base import BaseAgent, SONNET_MODEL
 from core.task import Task
 
 _SYSTEM = """You are the Devil's Advocate Agent for Monarch AI.
@@ -28,7 +28,8 @@ Respond with a single JSON object:
 
 class DevilsAdvocateAgent(BaseAgent):
     name = "devils_advocate"
-    model = OPUS_MODEL
+    display_name = "Ewerton - Advogado do Diabo"
+    model = SONNET_MODEL
     system_prompt = _SYSTEM
 
     async def build_user_message(self, task: Task) -> str:
@@ -50,7 +51,7 @@ class DevilsAdvocateAgent(BaseAgent):
         approved = result.output.get("approved", False)
         issues_count = len(result.output.get("issues", []))
         task.add_history(
-            agent=self.name,
+            agent=self.label,
             action="review_complete",
             detail=f"approved={approved} issues={issues_count}",
         )

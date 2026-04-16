@@ -1,6 +1,7 @@
 import os
 import logging
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -48,3 +49,50 @@ class FsTools:
                 rel = abs_file.relative_to(self.workdir)
                 paths.append(str(rel).replace("\\", "/"))
         return sorted(paths)
+
+    # ------------------------------------------------------------------
+    # Tool schema (same interface as GitHubTools for local-only mode)
+    # ------------------------------------------------------------------
+
+    def as_tools_schema(self) -> list[dict[str, Any]]:
+        """Return Anthropic tool_use schema matching the GitHubTools interface."""
+        return [
+            {
+                "name": "read_file",
+                "description": "Read the content of a local file.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string", "description": "File path"},
+                        "ref": {"type": "string", "description": "Ignored in local mode"},
+                    },
+                    "required": ["path"],
+                },
+            },
+            {
+                "name": "list_files",
+                "description": "List all files recursively under a local directory.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "directory": {"type": "string", "description": "Directory path (empty for root)"},
+                        "ref": {"type": "string", "description": "Ignored in local mode"},
+                    },
+                    "required": [],
+                },
+            },
+            {
+                "name": "write_file",
+                "description": "Create or update a local file.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string"},
+                        "content": {"type": "string", "description": "Full file content"},
+                        "commit_message": {"type": "string", "description": "Ignored in local mode"},
+                        "branch": {"type": "string", "description": "Ignored in local mode"},
+                    },
+                    "required": ["path", "content"],
+                },
+            },
+        ]

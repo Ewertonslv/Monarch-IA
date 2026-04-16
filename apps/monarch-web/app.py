@@ -61,13 +61,25 @@ def _client_ip(request: Request) -> str:
     return "unknown"
 
 
+def _assert_hub_write_allowed() -> None:
+    if config.hub_read_only:
+        raise HTTPException(
+            status_code=403,
+            detail="Hub is read-only. Use CLI or Telegram for task execution.",
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _db, _orchestrator
     _db = Database(config.database_url)
     await _db.init()
-    _orchestrator = Orchestrator(_db)
-    logger.info("Monarch AI web interface ready")
+    if not config.hub_read_only:
+        _orchestrator = Orchestrator(_db)
+    logger.info(
+        "Monarch AI web interface ready (hub_read_only=%s)",
+        config.hub_read_only,
+    )
     yield
     if _orchestrator:
         await _orchestrator.aclose()
@@ -86,6 +98,16 @@ templates = Jinja2Templates(directory=_templates_dir)
 async def add_security_and_rate_limit(request: Request, call_next):
     path = request.url.path
     client_ip = _client_ip(request)
+
+    if config.hub_read_only and request.method not in {"GET", "HEAD"} and (
+        path.startswith("/hub/") or path.startswith("/tasks")
+    ):
+        return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "Hub is read-only. Use CLI or Telegram for task execution.",
+            },
+        )
 
     if path.startswith("/hub/") and not _hub_limiter.allow(client_ip):
         return JSONResponse(
@@ -464,6 +486,7 @@ async def index(request: Request):
 
 @app.post("/tasks")
 async def create_task(body: TaskRequest):
+    _assert_hub_write_allowed()
     task = Task(raw_input=body.raw_input)
     asyncio.create_task(_run_task_and_broadcast(task))
     return {"task_id": task.task_id, "status": task.status}
@@ -487,6 +510,7 @@ async def get_task(task_id: str):
 
 @app.post("/tasks/{task_id}/approve")
 async def approve_task(task_id: str):
+    _assert_hub_write_allowed()
     assert _orchestrator is not None
     await _orchestrator.approve_task(task_id)
     return {"task_id": task_id, "action": "approved"}
@@ -494,6 +518,7 @@ async def approve_task(task_id: str):
 
 @app.post("/tasks/{task_id}/reject")
 async def reject_task(task_id: str):
+    _assert_hub_write_allowed()
     assert _orchestrator is not None
     await _orchestrator.reject_task(task_id)
     return {"task_id": task_id, "action": "rejected"}
@@ -568,6 +593,7 @@ async def hub_business_units():
 
 @app.post("/hub/business-units")
 async def hub_create_business_unit(body: BusinessUnitCreateRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/business-units", body.model_dump(exclude_none=True))
     if not result:
         raise HTTPException(status_code=502, detail="Could not create business unit in monarch-core")
@@ -576,6 +602,7 @@ async def hub_create_business_unit(body: BusinessUnitCreateRequest):
 
 @app.patch("/hub/business-units/{business_unit_id}")
 async def hub_update_business_unit(business_unit_id: str, body: BusinessUnitUpdateRequest):
+    _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -677,6 +704,7 @@ async def hub_project_detail(project_id: str):
 
 @app.patch("/hub/projects/{project_id}")
 async def hub_project_update(project_id: str, body: ProjectUpdateRequest):
+    _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -705,6 +733,7 @@ async def hub_ideas(status: str | None = None, classification: str | None = None
 
 @app.post("/hub/ideas")
 async def hub_create_idea(body: IdeaCreateRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/ideas", body.model_dump(exclude_none=True))
     if not result:
         raise HTTPException(status_code=502, detail="Could not create idea in monarch-core")
@@ -713,6 +742,7 @@ async def hub_create_idea(body: IdeaCreateRequest):
 
 @app.patch("/hub/ideas/{idea_id}")
 async def hub_update_idea(idea_id: str, body: IdeaUpdateRequest):
+    _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -725,6 +755,7 @@ async def hub_update_idea(idea_id: str, body: IdeaUpdateRequest):
 
 @app.post("/hub/ideas/{idea_id}/convert-to-project")
 async def hub_convert_idea_to_project(idea_id: str, body: IdeaConvertRequest):
+    _assert_hub_write_allowed()
     idea = await _fetch_monarch_core_json(f"/api/ideas/{idea_id}")
     if not idea:
         raise HTTPException(status_code=404, detail="Idea not found")
@@ -773,6 +804,7 @@ async def hub_convert_idea_to_project(idea_id: str, body: IdeaConvertRequest):
 
 @app.post("/hub/ideas/{idea_id}/convert-to-task")
 async def hub_convert_idea_to_task(idea_id: str, body: IdeaConvertToTaskRequest):
+    _assert_hub_write_allowed()
     idea = await _fetch_monarch_core_json(f"/api/ideas/{idea_id}")
     if not idea:
         raise HTTPException(status_code=404, detail="Idea not found")
@@ -830,6 +862,7 @@ async def hub_metrics(project_id: str | None = None, metric_name: str | None = N
 
 @app.post("/hub/metrics")
 async def hub_create_metric(body: ProjectMetricCreateRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/project-metrics", body.model_dump(exclude_none=True))
     if not result:
         raise HTTPException(status_code=502, detail="Could not create metric in monarch-core")
@@ -854,6 +887,7 @@ async def hub_agents(status: str | None = None, pipeline_name: str | None = None
 
 @app.post("/hub/agents")
 async def hub_create_agent(body: AgentProfileCreateRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/agent-profiles", body.model_dump(exclude_none=True))
     if not result:
         raise HTTPException(status_code=502, detail="Could not create agent profile in monarch-core")
@@ -862,6 +896,7 @@ async def hub_create_agent(body: AgentProfileCreateRequest):
 
 @app.patch("/hub/agents/{agent_id}")
 async def hub_update_agent(agent_id: str, body: AgentProfileUpdateRequest):
+    _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -896,6 +931,7 @@ async def hub_roadmap_items(
 
 @app.post("/hub/roadmap-items")
 async def hub_create_roadmap_item(body: RoadmapItemCreateRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/roadmap-items", body.model_dump(exclude_none=True))
     if not result:
         raise HTTPException(status_code=502, detail="Could not create roadmap item in monarch-core")
@@ -904,6 +940,7 @@ async def hub_create_roadmap_item(body: RoadmapItemCreateRequest):
 
 @app.patch("/hub/roadmap-items/{item_id}")
 async def hub_update_roadmap_item(item_id: str, body: RoadmapItemUpdateRequest):
+    _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -938,6 +975,7 @@ async def hub_tasks(
 
 @app.post("/hub/tasks")
 async def hub_create_task(body: HubTaskCreateRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/tasks", body.model_dump(exclude_none=True))
     if not result:
         raise HTTPException(status_code=502, detail="Could not create task in monarch-core")
@@ -946,6 +984,7 @@ async def hub_create_task(body: HubTaskCreateRequest):
 
 @app.patch("/hub/tasks/{task_id}")
 async def hub_update_task(task_id: str, body: HubTaskUpdateRequest):
+    _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
     if not payload:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -974,6 +1013,7 @@ async def hub_approvals(status: str | None = None, project_id: str | None = None
 
 @app.post("/hub/approvals/{approval_id}/approve")
 async def hub_approve_approval(approval_id: str, body: HubApprovalDecisionRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json(f"/api/approvals/{approval_id}/approve", body.model_dump())
     if not result:
         raise HTTPException(status_code=502, detail="Could not approve in monarch-core")
@@ -982,6 +1022,7 @@ async def hub_approve_approval(approval_id: str, body: HubApprovalDecisionReques
 
 @app.post("/hub/approvals/{approval_id}/reject")
 async def hub_reject_approval(approval_id: str, body: HubApprovalDecisionRequest):
+    _assert_hub_write_allowed()
     result = await _post_monarch_core_json(f"/api/approvals/{approval_id}/reject", body.model_dump())
     if not result:
         raise HTTPException(status_code=502, detail="Could not reject in monarch-core")
