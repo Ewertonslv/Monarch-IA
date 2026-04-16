@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import Select, select
@@ -9,6 +10,60 @@ from app.models.project import Project
 from app.models.roadmap_item import RoadmapItem
 from app.models.task import Task
 from app.schemas.project import ProjectCreate, ProjectUpdate
+
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
+IMPLEMENTATION_BLUEPRINTS: dict[str, dict[str, object]] = {
+    "monarch-ai": {
+        "canonical_path": ".",
+        "deliverable": "Hub, orchestracao multiagente e governanca do portfolio.",
+        "module_labels": ["hub", "monarch-core", "monarch-web", "orchestrator"],
+        "test_targets": ["tests", "apps/monarch-core", "apps/monarch-web"],
+    },
+    "whatsapp-notion-bot": {
+        "canonical_path": "apps/whatsapp-notion-bot",
+        "deliverable": "Webhook financeiro confiavel com classificacao e escrita no Notion.",
+        "module_labels": ["webhook", "classifier", "notion", "z-api"],
+        "test_targets": ["apps/whatsapp-notion-bot/whatsapp_notion_bot/tests"],
+    },
+    "pdf-factory": {
+        "canonical_path": "apps/pdf-factory",
+        "deliverable": "Pipeline de briefing para ativos digitais padronizados.",
+        "module_labels": ["models", "pipeline", "tests"],
+        "test_targets": ["apps/pdf-factory/tests"],
+    },
+    "instagram-automation": {
+        "canonical_path": "apps/instagram-automation",
+        "deliverable": "Pesquisa, fila, briefing e checklist de publicacao assistida.",
+        "module_labels": ["research", "queue", "briefing", "publication"],
+        "test_targets": ["apps/instagram-automation/tests"],
+    },
+    "canal-dark": {
+        "canonical_path": "apps/canal-dark",
+        "deliverable": "Backlog de pautas e roteiro base para operacao de conteudo dark.",
+        "module_labels": ["brief", "backlog", "script"],
+        "test_targets": ["apps/canal-dark/tests"],
+    },
+    "achadinhos": {
+        "canonical_path": "apps/achadinhos",
+        "deliverable": "Catalogo, scoring e shortlist priorizada de produtos.",
+        "module_labels": ["catalog", "scoring", "shortlist"],
+        "test_targets": ["apps/achadinhos/tests"],
+    },
+    "tiktok-shop": {
+        "canonical_path": "apps/tiktok-shop",
+        "deliverable": "Oferta minima, roteiro de video e checklist de validacao comercial.",
+        "module_labels": ["offer", "video-script", "validation"],
+        "test_targets": ["apps/tiktok-shop/tests"],
+    },
+    "solo-leveling-lab": {
+        "canonical_path": "apps/solo-leveling-lab",
+        "deliverable": "Experimento autoral com ciclo e captura de aprendizados.",
+        "module_labels": ["thesis", "experiment", "learning-cycle"],
+        "test_targets": ["apps/solo-leveling-lab/tests"],
+    },
+}
 
 
 async def list_projects(
@@ -132,4 +187,45 @@ async def get_project_execution_summary(db: AsyncSession, project_id: UUID) -> d
             if next_open_roadmap
             else project.next_action or "Definir proxima entrega"
         ),
+    }
+
+
+async def get_project_implementation_summary(db: AsyncSession, project_id: UUID) -> dict[str, object] | None:
+    project = await db.get(Project, project_id)
+    if project is None:
+        return None
+
+    blueprint = IMPLEMENTATION_BLUEPRINTS.get(project.slug)
+    if blueprint is None:
+        canonical_path = project.source_path or "."
+        package_present = False
+        readme_present = False
+        test_suite_present = False
+        module_labels: list[str] = []
+        deliverable = "Implementacao local ainda nao mapeada."
+    else:
+        canonical_path = str(blueprint["canonical_path"])
+        package_path = (REPO_ROOT / canonical_path).resolve()
+        package_present = package_path.exists()
+        readme_present = (package_path / "README.md").exists() if package_present else False
+        test_targets = [REPO_ROOT / str(target) for target in blueprint.get("test_targets", [])]
+        test_suite_present = any(target.exists() for target in test_targets)
+        module_labels = list(blueprint.get("module_labels", []))
+        deliverable = str(blueprint["deliverable"])
+
+    implementation_status = "planejado"
+    if package_present:
+        implementation_status = "scaffold local"
+    if package_present and readme_present and test_suite_present:
+        implementation_status = "implementado localmente"
+
+    return {
+        "implementation_status": implementation_status,
+        "canonical_path": canonical_path,
+        "deliverable": deliverable,
+        "package_present": package_present,
+        "readme_present": readme_present,
+        "test_suite_present": test_suite_present,
+        "module_count": len(module_labels),
+        "module_labels": module_labels,
     }
