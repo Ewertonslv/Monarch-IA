@@ -37,6 +37,7 @@ class ImplementerAgent(BaseAgent):
     def __init__(self) -> None:
         super().__init__()
         self._github = GitHubTools()
+        self._fs = FsTools()
 
     @property
     def tools(self) -> list[dict[str, Any]]:
@@ -62,6 +63,7 @@ class ImplementerAgent(BaseAgent):
             case "list_files":
                 return self._github.list_files(**inputs)
             case "write_file":
+                self._fs.write(inputs["path"], inputs["content"])
                 if branch:
                     inputs["branch"] = branch
                 self._github.write_file(**inputs)

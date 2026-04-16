@@ -27,9 +27,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_APPROVAL_TIMEOUT_SECONDS = 300  # 5 minutes
-
-
 class Orchestrator:
     """Central coordinator — runs the full 11-agent pipeline for a task."""
 
@@ -101,7 +98,8 @@ class Orchestrator:
                 logger.warning("[orchestrator] Could not send Telegram approval: %s", exc)
 
         # Poll DB until status changes (resolved by bot/web) or timeout
-        for _ in range(_APPROVAL_TIMEOUT_SECONDS):
+        timeout_seconds = max(60, config.approval_timeout_minutes * 60)
+        for _ in range(timeout_seconds):
             await asyncio.sleep(1)
             fresh = await self.db.get_task(task.task_id)
             if fresh and fresh.status != TaskStatus.AWAITING_APPROVAL:
@@ -185,24 +183,29 @@ class Orchestrator:
                     logger.warning("Branch creation failed (may already exist): %s", exc)
 
             await self._run_agent("implementer", lambda: ImplementerAgent().run(task))
+
+            if task.branch_name and not task.pr_url:
+                reqs = task.requirements or {}
+                task.pr_url = gh.create_pr(
+                    title=f"feat: {reqs.get('summary', task.raw_input[:60])}",
+                    body=self._build_pr_body(task),
+                    head=task.branch_name,
+                )
+                task.add_history(agent="orchestrator", action="pr_created", detail=task.pr_url)
+
             await self._run_agent("testing", lambda: TestingAgent().run(task))
             await self._run_agent("reviewer", lambda: ReviewerAgent().run(task))
             await self._run_agent("security", lambda: SecurityAgent().run(task))
             await self._run_agent("deploy", lambda: DeployAgent().run(task))
 
-            # Create PR if branch was made and no blocking issues
             security_approved = (task.security_report or {}).get("approved", True)
             review_approved = (task.review_report or {}).get("approved", True)
-
-            if task.branch_name and security_approved and review_approved:
-                reqs = task.requirements or {}
-                pr_url = gh.create_pr(
-                    title=f"feat: {reqs.get('summary', task.raw_input[:60])}",
-                    body=self._build_pr_body(task),
-                    head=task.branch_name,
+            if task.pr_url and (not security_approved or not review_approved):
+                task.add_history(
+                    agent="orchestrator",
+                    action="pr_requires_changes",
+                    detail=f"review_approved={review_approved} security_approved={security_approved}",
                 )
-                task.pr_url = pr_url
-                task.add_history(agent="orchestrator", action="pr_created", detail=pr_url)
 
             # --- Human approval gate (post-implementation) ---
             approved = await self._request_approval(task, "post_implementation")
