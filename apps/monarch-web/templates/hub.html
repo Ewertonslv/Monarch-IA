@@ -1042,6 +1042,10 @@ function renderProjectDetail() {
         <div class="detail-list">${renderDetailItems(projectDetail.ideas, idea => `<div><strong>${escHtml(idea.title)}</strong></div><div>${escHtml(idea.status)}</div>`)}</div>
       </div>
       <div class="detail-panel">
+        <h3>Roadmap</h3>
+        <div class="detail-list">${renderDetailItems(projectDetail.roadmap_items, item => `<div><strong>${escHtml(item.title)}</strong></div><div>${escHtml(item.phase)} - ${escHtml(item.status)} - ${escHtml(item.priority)}</div><div>${escHtml(item.description || "")}</div>`)}</div>
+      </div>
+      <div class="detail-panel">
         <h3>Tarefas do hub</h3>
         <div class="detail-list">${renderDetailItems(projectDetail.tasks, task => `<div><strong>${escHtml(task.title)}</strong></div><div>${escHtml(task.status)} - ${escHtml(task.priority)}</div>`)}</div>
       </div>
