@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
-from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from app.schemas.project import (
+    ProjectCreate,
+    ProjectExecutionSummaryRead,
+    ProjectRead,
+    ProjectUpdate,
+)
 from app.services import project_service
 
 router = APIRouter()
@@ -41,6 +46,17 @@ async def get_project(project_id: UUID, db: AsyncSession = Depends(get_db_sessio
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
+
+
+@router.get("/{project_id}/execution-summary", response_model=ProjectExecutionSummaryRead)
+async def get_project_execution_summary(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+) -> ProjectExecutionSummaryRead:
+    summary = await project_service.get_project_execution_summary(db, project_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return ProjectExecutionSummaryRead(**summary)
 
 
 @router.patch("/{project_id}", response_model=ProjectRead)
