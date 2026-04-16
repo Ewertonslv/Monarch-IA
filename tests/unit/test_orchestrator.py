@@ -41,10 +41,15 @@ async def test_orchestrator_runs_full_pipeline(db):
         patch("core.orchestrator.GitHubTools") as GH,
         patch.object(orch, "_request_approval", new=AsyncMock(return_value=True)),
     ):
-        for AgentCls in [DA, PA, AA, PLA, IA, TA, RA, DEPLOY, DOC, OBS]:
+        for AgentCls in [DA, PA, AA, PLA, IA, TA, DEPLOY, DOC, OBS]:
             AgentCls.return_value.run = AsyncMock(return_value=_result())
         DVA.return_value.run = AsyncMock(return_value=_result({"approved": True}))
-        RA.return_value.run = AsyncMock(return_value=_result({"approved": True, "overall_quality": "good"}))
+
+        async def _review_run(task):
+            assert task.pr_url == "https://github.com/owner/repo/pull/1"
+            return _result({"approved": True, "overall_quality": "good"})
+
+        RA.return_value.run = AsyncMock(side_effect=_review_run)
         SA.return_value.run = AsyncMock(return_value=_result({"approved": True, "risk_level": "low"}))
         GH.return_value.create_branch = MagicMock()
         GH.return_value.create_pr = MagicMock(return_value="https://github.com/owner/repo/pull/1")
