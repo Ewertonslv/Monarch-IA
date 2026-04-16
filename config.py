@@ -46,6 +46,12 @@ class Config(BaseSettings):
     confidence_threshold: float = Field(
         default=0.70, validation_alias="CONFIDENCE_THRESHOLD"
     )
+    implementer_model: str = Field(
+        default="claude-sonnet-4-6", validation_alias="IMPLEMENTER_MODEL"
+    )
+    implementer_max_tokens: int = Field(
+        default=3200, validation_alias="IMPLEMENTER_MAX_TOKENS"
+    )
 
     @field_validator("anthropic_api_key")
     @classmethod
