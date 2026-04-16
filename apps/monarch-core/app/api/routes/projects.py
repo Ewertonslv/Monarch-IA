@@ -7,6 +7,7 @@ from app.db.session import get_db_session
 from app.schemas.project import (
     ProjectCreate,
     ProjectExecutionSummaryRead,
+    ProjectImplementationSummaryRead,
     ProjectRead,
     ProjectUpdate,
 )
@@ -57,6 +58,17 @@ async def get_project_execution_summary(
     if summary is None:
         raise HTTPException(status_code=404, detail="Project not found")
     return ProjectExecutionSummaryRead(**summary)
+
+
+@router.get("/{project_id}/implementation-summary", response_model=ProjectImplementationSummaryRead)
+async def get_project_implementation_summary(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+) -> ProjectImplementationSummaryRead:
+    summary = await project_service.get_project_implementation_summary(db, project_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return ProjectImplementationSummaryRead(**summary)
 
 
 @router.patch("/{project_id}", response_model=ProjectRead)

@@ -64,3 +64,14 @@ class ProjectExecutionSummaryRead(BaseModel):
     pending_approvals: int
     failed_executions: int
     next_checkpoint: str
+
+
+class ProjectImplementationSummaryRead(BaseModel):
+    implementation_status: str
+    canonical_path: str
+    deliverable: str
+    package_present: bool
+    readme_present: bool
+    test_suite_present: bool
+    module_count: int
+    module_labels: list[str]
