@@ -649,6 +649,9 @@ async def hub_project_detail(project_id: str):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    execution_summary = await _fetch_monarch_core_json(
+        f"/api/projects/{project_id}/execution-summary"
+    )
     ideas = await _fetch_monarch_core_json(f"/api/ideas?project_id={project_id}") or []
     tasks = await _fetch_monarch_core_json(f"/api/tasks?project_id={project_id}") or []
     approvals = await _fetch_monarch_core_json(f"/api/approvals?project_id={project_id}") or []
@@ -664,6 +667,7 @@ async def hub_project_detail(project_id: str):
         "executions": executions[:8],
         "metrics": metrics[:8],
         "roadmap_items": roadmap_items[:12],
+        "execution_summary": execution_summary,
     }
 
 

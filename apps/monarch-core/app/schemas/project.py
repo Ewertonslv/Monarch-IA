@@ -49,3 +49,18 @@ class ProjectRead(BaseModel):
     next_action: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class ProjectExecutionSummaryRead(BaseModel):
+    readiness: int
+    stage_label: str
+    momentum: str
+    roadmap_total: int
+    roadmap_done: int
+    tasks_total: int
+    task_done: int
+    task_active: int
+    task_blocked: int
+    pending_approvals: int
+    failed_executions: int
+    next_checkpoint: str

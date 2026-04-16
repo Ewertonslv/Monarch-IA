@@ -817,6 +817,10 @@ function normalizeExecutionStage(stage) {
 }
 
 function summarizeProjectExecution(project, detail = null) {
+  if (detail?.execution_summary) {
+    return detail.execution_summary;
+  }
+
   const stageInfo = normalizeExecutionStage(project.stage);
   const roadmap = detail?.roadmap_items || [];
   const tasksList = detail?.tasks || [];
