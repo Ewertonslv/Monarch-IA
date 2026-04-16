@@ -26,10 +26,10 @@ async def main() -> None:
     await db.init()
     orchestrator = Orchestrator(db)
 
-    telegram = TelegramBot(db=db, orchestrator=orchestrator)
-
-    # Wire Telegram bot into Orchestrator so approval gates send notifications
-    orchestrator.set_telegram_bot(telegram)
+    telegram: TelegramBot | None = None
+    if config.enable_telegram_polling:
+        telegram = TelegramBot(db=db, orchestrator=orchestrator)
+        orchestrator.set_telegram_bot(telegram)
 
     # Inject shared db + orchestrator into the web app module
     import interfaces.web.app as web_module
@@ -62,6 +62,9 @@ async def main() -> None:
         await server.serve()
 
     async def run_telegram():
+        if telegram is None:
+            await stop_event.wait()
+            return
         try:
             await telegram.start_polling()
             await stop_event.wait()

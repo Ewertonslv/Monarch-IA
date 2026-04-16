@@ -14,6 +14,9 @@ class Config(BaseSettings):
     # Telegram
     telegram_bot_token: str = Field(..., validation_alias="TELEGRAM_BOT_TOKEN")
     telegram_chat_id: str = Field(..., validation_alias="TELEGRAM_CHAT_ID")
+    enable_telegram_polling: bool = Field(
+        default=True, validation_alias="ENABLE_TELEGRAM_POLLING"
+    )
 
     # Web UI
     web_port: int = Field(default=8000, validation_alias="WEB_PORT")

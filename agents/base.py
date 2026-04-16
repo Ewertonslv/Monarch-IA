@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -102,12 +103,31 @@ class BaseAgent(ABC):
         raise NotImplementedError(f"Tool not implemented: {name}")
 
     def _extract_json(self, text: str) -> dict[str, Any]:
-        """Extract JSON from text — handles markdown code blocks."""
+        """Extract JSON from text with light recovery for common LLM formatting."""
         text = text.strip()
         if text.startswith("```"):
             lines = text.split("\n")
             text = "\n".join(lines[1:-1])
-        return json.loads(text)
+        candidates = [text]
+
+        json_fence_matches = re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+        candidates.extend(json_fence_matches)
+
+        first_brace = text.find("{")
+        last_brace = text.rfind("}")
+        if first_brace != -1 and last_brace != -1 and first_brace < last_brace:
+            candidates.append(text[first_brace:last_brace + 1])
+
+        for candidate in candidates:
+            candidate = candidate.strip()
+            if not candidate:
+                continue
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+
+        raise json.JSONDecodeError("Could not extract valid JSON object", text, 0)
 
     async def run(self, task: Task) -> AgentResult:
         user_content = await self.build_user_message(task)
@@ -127,7 +147,7 @@ class BaseAgent(ABC):
         if not text_blocks:
             raise ValueError(f"[{self.name}] No text block in response")
 
-        raw = self._extract_json(text_blocks[0].text)
+        raw = self._extract_json("\n".join(block.text for block in text_blocks))
         result = AgentResult.from_dict(raw)
         logger.info(f"[{self.name}] Done. Confidence: {result.confidence:.2f}")
         return result
