@@ -3,6 +3,10 @@
 Data: 2026-04-15
 Escopo: execucao local de todos os projetos do ecossistema antes de qualquer nova subida para servidor ou producao.
 
+## Referencia complementar
+
+- Ver `docs/ecosystem-execution-plan.md` para o plano consolidado do ecossistema, com a leitura do `Monarch AI` como criador de projetos e coordenador dos projetos-filhos.
+
 ## Objetivo
 
 Levar todos os projetos do Hub a um estado minimo completo, com definicao clara de:

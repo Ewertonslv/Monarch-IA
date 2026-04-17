@@ -14,6 +14,12 @@ class TaskStatus(str, Enum):
     DISCARDED = "discarded"
 
 
+class TaskMode(str, Enum):
+    EXECUTION = "execution"
+    IDEATION = "ideation"
+    INCUBATION = "incubation"
+
+
 @dataclass
 class HistoryEntry:
     agent: str
@@ -26,11 +32,13 @@ class HistoryEntry:
 class Task:
     raw_input: str
     task_id: str = field(default_factory=lambda: f"monarch-{uuid.uuid4().hex[:8]}")
+    mode: TaskMode = TaskMode.EXECUTION
     status: TaskStatus = TaskStatus.PENDING
     requirements: dict[str, Any] | None = None
     priority: str | None = None
     architecture: dict[str, Any] | None = None
     plan: list[dict[str, Any]] | None = None
+    incubation_summary: dict[str, Any] | None = None
     devils_advocate_rounds: list[dict[str, Any]] = field(default_factory=list)
     branch_name: str | None = None
     pr_url: str | None = None

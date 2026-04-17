@@ -2,6 +2,15 @@
 
 Sistema multi-agente que automatiza desenvolvimento SaaS.
 
+## Leitura inicial para qualquer IA
+
+Antes de usar qualquer IA neste repositorio, peca para ela ler:
+
+- `docs/ai-operator-context.md`
+- `docs/active-incubations.md`
+
+Esses arquivos explicam o papel do `Monarch AI`, a finalidade de cada projeto-filho, a regra operacional `CLI-first` e o backlog incubado mais recente dos projetos ativos.
+
 ## Apps (CLI locais, sem custo de API)
 
 | App | Comando |
@@ -19,6 +28,15 @@ Sistema multi-agente que automatiza desenvolvimento SaaS.
 python -m interfaces.cli "shortlist de achadinhos"
 python -m interfaces.cli "experimento solo leveling sobre X"
 python -m interfaces.cli "crie o projeto canal dark para nicho de Y"
+```
+
+## CLI de Incubacao
+
+```bash
+python -m interfaces.cli ideate "perfil de instagram sobre IA para vender servicos" --project instagram
+python -m interfaces.cli incubate "canal dark de cortes diarios com afiliados" --project canal-dark
+python -m interfaces.cli incubate "catalogo de produtos afiliados para videos curtos" --project achadinhos
+python -m interfaces.cli projects
 ```
 
 ## Sistema principal
