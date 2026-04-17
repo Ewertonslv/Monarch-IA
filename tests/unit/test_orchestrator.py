@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from core.orchestrator import Orchestrator
-from core.task import Task, TaskStatus
+from core.task import Task, TaskMode, TaskStatus
 from agents.base import AgentResult
 
 
@@ -145,3 +145,68 @@ async def test_request_approval_persists_core_approval_id(db):
     assert approved is True
     assert persisted is not None
     assert persisted.current_core_approval_id == "approval-123"
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_completes_ideation_without_execution_agents(db):
+    orch = Orchestrator(db)
+
+    with (
+        patch("core.orchestrator.DiscoveryAgent") as DA,
+        patch("core.orchestrator.PrioritizationAgent") as PA,
+        patch("core.orchestrator.ArchitectureAgent") as AA,
+        patch("core.orchestrator.PlanningAgent") as PLA,
+        patch("core.orchestrator.DevilsAdvocateAgent") as DVA,
+        patch("core.orchestrator.ImplementerAgent") as IA,
+        patch("core.orchestrator.TestingAgent") as TA,
+        patch("core.orchestrator.ReviewerAgent") as RA,
+        patch("core.orchestrator.SecurityAgent") as SA,
+        patch("core.orchestrator.DeployAgent") as DEPLOY,
+        patch("core.orchestrator.DocumentationAgent") as DOC,
+        patch("core.orchestrator.ObservabilityAgent") as OBS,
+        patch.object(orch, "_request_approval", new=AsyncMock(return_value=True)),
+    ):
+        DA.return_value.run = AsyncMock(
+            return_value=_result(
+                {
+                    "summary": "Incubar projeto de instagram de IA",
+                    "feature_type": "enhancement",
+                    "complexity": "medium",
+                    "affected_areas": ["instagram", "content"],
+                    "acceptance_criteria": ["Top ideias priorizadas"],
+                }
+            )
+        )
+        PA.return_value.run = AsyncMock(return_value=_result({"priority": "high"}))
+        AA.return_value.run = AsyncMock(return_value=_result({"approach": "Criar funil editorial"}))
+        PLA.return_value.run = AsyncMock(
+            return_value=_result(
+                {
+                    "steps": [
+                        {
+                            "id": 1,
+                            "title": "Definir pilares de conteudo",
+                            "type": "write_code",
+                            "acceptance": "Pilares definidos",
+                        }
+                    ],
+                    "branch_name": "incubate/instagram-ai",
+                }
+            )
+        )
+        DVA.return_value.run = AsyncMock(return_value=_result({"approved": True}))
+
+        task = Task(raw_input="Incube um projeto de instagram de IA", mode=TaskMode.IDEATION)
+        result = await orch.run(task)
+
+    assert result.status == TaskStatus.DONE
+    assert result.incubation_summary is not None
+    assert result.incubation_summary["mode"] == "ideation"
+    assert result.incubation_summary["suggested_project_type"] == "content"
+    IA.return_value.run.assert_not_called()
+    TA.return_value.run.assert_not_called()
+    RA.return_value.run.assert_not_called()
+    SA.return_value.run.assert_not_called()
+    DEPLOY.return_value.run.assert_not_called()
+    DOC.return_value.run.assert_not_called()
+    OBS.return_value.run.assert_not_called()

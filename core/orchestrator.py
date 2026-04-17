@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Awaitable
 from config import config
 from core.monarch_core_client import MonarchCoreClient
 from core.circuit_breaker import CircuitBreaker, CircuitBreakerError
-from core.task import Task, TaskStatus
+from core.task import Task, TaskMode, TaskStatus
 from storage.database import Database
 from agents.discovery import DiscoveryAgent
 from agents.prioritization import PrioritizationAgent
@@ -162,7 +162,11 @@ class Orchestrator:
         await self.db.save_task(task)
         await self._sync_task_started(task)
         await self.db.update_task(task)
-        logger.info("[orchestrator] Starting pipeline for %s", task.task_id)
+        logger.info(
+            "[orchestrator] Starting %s pipeline for %s",
+            task.mode.value,
+            task.task_id,
+        )
 
         try:
             # --- Direction layer ---
@@ -192,6 +196,15 @@ class Orchestrator:
                         # Ask Architecture + Planning to revise
                         await self._run_agent("architecture", lambda: ArchitectureAgent().run(task))
                         await self._run_agent("planning", lambda: PlanningAgent().run(task))
+
+            if task.mode in {TaskMode.IDEATION, TaskMode.INCUBATION}:
+                await self._complete_incubation_mode(task)
+                logger.info(
+                    "[orchestrator] %s pipeline complete for %s",
+                    task.mode.value,
+                    task.task_id,
+                )
+                return task
 
             # --- Human approval gate (post-planning) ---
             approved = await self._request_approval(task, "post_planning")
@@ -269,6 +282,69 @@ class Orchestrator:
 
         return task
 
+    async def _complete_incubation_mode(self, task: Task) -> None:
+        task.incubation_summary = self._build_incubation_summary(task)
+        task.status = TaskStatus.DONE
+        task.add_history(
+            agent="orchestrator",
+            action=f"{task.mode.value}_complete",
+            detail=f"plan_steps={len(task.plan or [])}",
+        )
+        await self.db.update_task(task)
+
+    def _build_incubation_summary(self, task: Task) -> dict[str, Any]:
+        reqs = task.requirements or {}
+        arch = task.architecture or {}
+        plan = task.plan or []
+        top_steps = [
+            {
+                "title": step.get("title"),
+                "type": step.get("type"),
+                "acceptance": step.get("acceptance"),
+            }
+            for step in plan[:5]
+            if isinstance(step, dict)
+        ]
+        next_actions = [step["title"] for step in top_steps if step.get("title")]
+        return {
+            "mode": task.mode.value,
+            "summary": reqs.get("summary", task.raw_input),
+            "priority": task.priority or "medium",
+            "complexity": reqs.get("complexity", "unknown"),
+            "feature_type": reqs.get("feature_type", "other"),
+            "suggested_project_type": self._infer_project_type(task),
+            "affected_areas": reqs.get("affected_areas", []),
+            "acceptance_criteria": reqs.get("acceptance_criteria", []),
+            "approach": arch.get("approach"),
+            "patterns": arch.get("patterns", []),
+            "branch_name": task.branch_name,
+            "estimated_steps": len(plan),
+            "backlog_preview": top_steps,
+            "next_actions": next_actions,
+        }
+
+    def _infer_project_type(self, task: Task) -> str:
+        reqs = task.requirements or {}
+        raw = task.raw_input.lower()
+        feature_type = str(reqs.get("feature_type", "other"))
+        affected = " ".join(str(area).lower() for area in reqs.get("affected_areas", []))
+
+        if any(term in raw for term in ("instagram", "conteudo", "canal", "video")):
+            return "content"
+        if any(term in raw for term in ("produto", "oferta", "pdf", "documento", "ebook")):
+            return "product"
+        if any(term in raw for term in ("afiliado", "shop", "ecommerce", "achadinho")):
+            return "ecommerce"
+        if any(term in raw for term in ("automacao", "automate", "workflow")):
+            return "automation"
+        if "lab" in raw or "experimento" in raw:
+            return "lab"
+        if feature_type in {"backend_api", "frontend", "fullstack", "infrastructure"}:
+            return "internal_tool"
+        if "content" in affected:
+            return "content"
+        return "internal_tool"
+
     async def aclose(self) -> None:
         await self._core_client.aclose()
 
@@ -305,7 +381,7 @@ class Orchestrator:
                     project_id=task.core_project_id,
                     task_id=task.core_task_id,
                     agent_name="legacy-orchestrator",
-                    execution_type="pipeline_run",
+                    execution_type=f"{task.mode.value}_pipeline",
                     status="running",
                     input_payload=task.raw_input,
                     started_at=datetime.now(UTC),
@@ -341,10 +417,13 @@ class Orchestrator:
                     final_status = "running"
                 elif task.status == TaskStatus.DISCARDED:
                     final_status = "cancelled"
+                output_summary = f"Pipeline encerrado com status {task.status.value}"
+                if task.incubation_summary:
+                    output_summary = task.incubation_summary.get("summary", output_summary)
                 await self._core_client.update_execution(
                     execution_id=task.core_execution_id,
                     status=final_status,
-                    output_summary=f"Pipeline encerrado com status {task.status.value}",
+                    output_summary=output_summary,
                     error_message=None if task.status == TaskStatus.DONE else task.history[-1].detail if task.history else None,
                     finished_at=datetime.now(UTC) if final_status in {"completed", "failed", "cancelled"} else None,
                 )
