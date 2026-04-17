@@ -37,6 +37,10 @@ class QueueItem:
     hashtags: list[str] = field(default_factory=list)
     call_to_action: str = ""
     status: str = "awaiting_approval"
+    approval_channel: str = "telegram"
+    revision_count: int = 0
+    feedback_history: list[str] = field(default_factory=list)
+    draft_caption: str = ""
     review_notes: list[str] = field(default_factory=list)
 
 

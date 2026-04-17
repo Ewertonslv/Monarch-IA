@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from core.task import HistoryEntry, Task, TaskStatus
+from core.task import HistoryEntry, Task, TaskMode, TaskStatus
 from storage.models import Base, TaskRecord
 
 
@@ -15,6 +15,8 @@ def _serialize_task(task: Task) -> str:
             return obj.isoformat()
         if isinstance(obj, TaskStatus):
             return obj.value
+        if isinstance(obj, TaskMode):
+            return obj.value
         raise TypeError(f"Not serializable: {type(obj)}")
 
     return json.dumps(asdict(task), default=default)
@@ -22,6 +24,7 @@ def _serialize_task(task: Task) -> str:
 
 def _deserialize_task(data: str) -> Task:
     raw = json.loads(data)
+    raw["mode"] = TaskMode(raw.get("mode", TaskMode.EXECUTION.value))
     raw["status"] = TaskStatus(raw["status"])
     raw["history"] = [
         HistoryEntry(

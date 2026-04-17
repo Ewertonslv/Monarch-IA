@@ -55,6 +55,12 @@ def choose_queue_item(research: ResearchInput, angles: list[ContentAngle]) -> Qu
         research.call_to_action,
     ]
     hashtags = _build_hashtags(research, selected)
+    caption_outline = [
+        selected.hook,
+        f"Mostre um exemplo pratico ligado a {selected.pillar.lower()}.",
+        f"Conecte o conteudo ao objetivo: {research.objective}.",
+        research.call_to_action,
+    ]
 
     return QueueItem(
         slug=slugify(selected.title),
@@ -67,6 +73,7 @@ def choose_queue_item(research: ResearchInput, angles: list[ContentAngle]) -> Qu
         caption_outline=caption_outline,
         hashtags=hashtags,
         call_to_action=research.call_to_action,
+        draft_caption="\n".join(caption_outline),
         review_notes=list(DEFAULT_REVIEW_NOTES),
     )
 

@@ -25,6 +25,9 @@ def test_queue_item_default_status():
         audience="teste",
     )
     assert item.status == "awaiting_approval"
+    assert item.approval_channel == "telegram"
+    assert item.revision_count == 0
+    assert item.feedback_history == []
 
 
 def test_build_content_angles_fills_signals_when_empty():
@@ -49,8 +52,10 @@ def test_choose_queue_item_includes_hashtags():
     )
     item = choose_queue_item(r, build_content_angles(r))
     assert item.status == "awaiting_approval"
+    assert item.approval_channel == "telegram"
     assert any(h.startswith("#") for h in item.hashtags)
     assert item.caption_outline
+    assert item.draft_caption
     assert item.review_notes
 
 
