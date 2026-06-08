@@ -1,7 +1,6 @@
 """CLI para Achadinhos."""
 import csv
 import json
-import sys
 from pathlib import Path
 
 import rich.console
@@ -9,7 +8,7 @@ import rich.table
 import typer
 
 from achadinhos.config import settings
-from achadinhos.models import ProductCandidate, ProductShortlist
+from achadinhos.models import ProductCandidate
 from achadinhos.pipeline import build_shortlist, render_shortlist_markdown, score_candidate
 
 app = typer.Typer(help="Achadinhos — descubra, catogue e priorize produtos.")

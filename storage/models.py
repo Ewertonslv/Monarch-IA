@@ -1,5 +1,6 @@
-from datetime import datetime, UTC
-from sqlalchemy import Column, String, Text, DateTime
+from datetime import UTC, datetime
+
+from sqlalchemy import Column, DateTime, String, Text
 from sqlalchemy.orm import DeclarativeBase
 
 

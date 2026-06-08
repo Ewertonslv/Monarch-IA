@@ -4,15 +4,14 @@ Claude API level (no real HTTP calls). Verifies that all 11 agents fire in order
 task state is persisted, and the final status is DONE.
 """
 import json
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import anthropic
+import pytest
 
-from core.task import Task, TaskStatus
 from core.orchestrator import Orchestrator
+from core.task import Task, TaskStatus
 from storage.database import Database
-from agents.base import AgentResult
 
 
 def _claude_msg(payload: dict) -> anthropic.types.Message:
@@ -67,7 +66,7 @@ async def test_full_pipeline_reaches_done(db):
         return _claude_msg(next(response_iter))
 
     with (
-        patch("agents.base._client") as mock_client,
+        patch("agents.base._api_client") as mock_client,
         patch("core.orchestrator.GitHubTools") as MockGHOrch,
         patch("agents.implementer.GitHubTools") as MockGH,
         patch("agents.reviewer.GitHubTools"),
@@ -109,7 +108,7 @@ async def test_pipeline_persists_task_to_db(db):
         return _claude_msg(next(response_iter))
 
     with (
-        patch("agents.base._client") as mock_client,
+        patch("agents.base._api_client") as mock_client,
         patch("core.orchestrator.GitHubTools") as MockGHOrch,
         patch("agents.implementer.GitHubTools") as MockGH,
         patch("agents.reviewer.GitHubTools"),

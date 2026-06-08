@@ -1,5 +1,9 @@
 from solo_leveling_lab.models import LabBrief
-from solo_leveling_lab.pipeline import build_experiment, build_experiment_cycle, render_experiment_plan
+from solo_leveling_lab.pipeline import (
+    build_experiment,
+    build_experiment_cycle,
+    render_experiment_plan,
+)
 
 
 def test_build_experiment_uses_thesis_and_format():

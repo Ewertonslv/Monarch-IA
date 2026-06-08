@@ -2,7 +2,7 @@
 import tempfile
 from pathlib import Path
 
-from pdf_factory.models import BriefInput, DocumentPlan, DocumentSection
+from pdf_factory.models import BriefInput, DocumentPlan
 from pdf_factory.pipeline import build_document_plan
 from pdf_factory.render import render_html, render_pdf
 

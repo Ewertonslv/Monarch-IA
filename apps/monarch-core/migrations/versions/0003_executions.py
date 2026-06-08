@@ -1,8 +1,7 @@
 """Add executions table."""
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 revision = "0003_executions"
 down_revision = "0002_tasks_and_approvals"
