@@ -5,14 +5,13 @@ Starts both the FastAPI web interface and the Telegram bot concurrently.
 import asyncio
 import logging
 import signal
-import sys
 
 import uvicorn
 
 from config import config
 from core.orchestrator import Orchestrator
-from storage.database import Database
 from interfaces.telegram_bot import TelegramBot
+from storage.database import Database
 
 logging.basicConfig(
     level=logging.INFO,

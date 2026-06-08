@@ -54,8 +54,6 @@ def render_html(plan: DocumentPlan, template: str = "minimal") -> str:
 def render_pdf(html_content: str, output_path: Path) -> bool:
     """Gera PDF a partir de HTML. Retorna True se bem-sucedido."""
     try:
-        import weasyprint
-
         from weasyprint import HTML  # type: ignore[import]
 
         HTML(string=html_content).write_pdf(str(output_path))

@@ -1,4 +1,3 @@
-import os
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
@@ -62,7 +61,7 @@ class Config(BaseSettings):
         default=True, validation_alias="HUB_READ_ONLY"
     )
     implementer_model: str = Field(
-        default="claude-sonnet-4-6", validation_alias="IMPLEMENTER_MODEL"
+        default="claude-opus-4-6", validation_alias="IMPLEMENTER_MODEL"
     )
     implementer_max_tokens: int = Field(
         default=3200, validation_alias="IMPLEMENTER_MAX_TOKENS"

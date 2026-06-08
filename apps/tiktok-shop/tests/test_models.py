@@ -1,7 +1,7 @@
 """Testes para modelos do TikTok Shop."""
 from dataclasses import dataclass
 
-from tiktok_shop.models import OfferAngle, ValidationPlan, VideoScript
+from tiktok_shop.models import VideoScript
 from tiktok_shop.pipeline import build_offer_angle, build_validation_plan, build_video_script
 
 

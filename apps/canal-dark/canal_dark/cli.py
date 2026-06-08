@@ -1,13 +1,17 @@
 """CLI para Canal Dark."""
-import json
 from pathlib import Path
 
 import rich.console
 import rich.table
 import typer
 
-from canal_dark.models import ChannelBrief, TopicIdea
-from canal_dark.pipeline import build_script_draft, build_topic_backlog, choose_priority_topic, render_script
+from canal_dark.models import ChannelBrief
+from canal_dark.pipeline import (
+    build_script_draft,
+    build_topic_backlog,
+    choose_priority_topic,
+    render_script,
+)
 
 app = typer.Typer(help="Canal Dark — produza pautas e roteiros para canais dark.")
 console = rich.console.Console()

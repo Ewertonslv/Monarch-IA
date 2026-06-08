@@ -4,7 +4,6 @@ import re
 
 from pdf_factory.models import BriefInput, DocumentPlan, DocumentSection
 
-
 DEFAULT_SECTION_HEADINGS = [
     "Panorama inicial",
     "Fundamentos",

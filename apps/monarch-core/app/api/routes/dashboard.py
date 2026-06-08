@@ -5,7 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
 from app.schemas.dashboard import ActivityItem, DashboardOverview, PerformanceItem
-from app.services.dashboard_service import get_dashboard_activity, get_dashboard_overview, get_dashboard_performance
+from app.services.dashboard_service import (
+    get_dashboard_activity,
+    get_dashboard_overview,
+    get_dashboard_performance,
+)
 
 router = APIRouter()
 

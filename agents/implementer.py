@@ -2,11 +2,11 @@ import json
 import logging
 from typing import Any
 
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import OPUS_MODEL, BaseAgent
 from config import config
 from core.task import Task
-from tools.github_tools import GitHubTools
 from tools.fs_tools import FsTools
+from tools.github_tools import GitHubTools
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ Do not use placeholders or truncate content."""
 class ImplementerAgent(BaseAgent):
     name = "implementer"
     display_name = "Fernanda - Implementação"
-    model = config.implementer_model or SONNET_MODEL
+    model = config.implementer_model or OPUS_MODEL
     max_tokens = config.implementer_max_tokens
     system_prompt = _SYSTEM
 
@@ -63,7 +63,7 @@ class ImplementerAgent(BaseAgent):
         self._fs = FsTools()
 
     @property
-    def system_prompt(self) -> str:  # type: ignore[override]
+    def system_prompt(self) -> str:  # type: ignore[override]  # noqa: F811 (property overrides the class-level default for local mode)
         return _SYSTEM_LOCAL if config.local_mode else _SYSTEM
 
     @property
@@ -236,7 +236,7 @@ class ImplementerAgent(BaseAgent):
 
         files = result.output.get("files_written", [])
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="implementation_complete",
             detail=f"files_written={len(files)}",
         )

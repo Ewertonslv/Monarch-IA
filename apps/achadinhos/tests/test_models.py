@@ -1,5 +1,5 @@
 """Testes para modelos do Achadinhos."""
-from achadinhos.models import ProductCandidate, ScoredCandidate
+from achadinhos.models import ProductCandidate
 from achadinhos.pipeline import score_candidate
 
 

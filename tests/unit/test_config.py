@@ -14,6 +14,7 @@ def test_config_loads_required_vars():
     }
     with patch.dict(os.environ, env):
         import importlib
+
         import config as cfg_module
         importlib.reload(cfg_module)
         c = cfg_module.Config()

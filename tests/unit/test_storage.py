@@ -1,7 +1,8 @@
 import pytest
 import pytest_asyncio
-from storage.database import Database
+
 from core.task import Task, TaskStatus
+from storage.database import Database
 
 
 @pytest_asyncio.fixture

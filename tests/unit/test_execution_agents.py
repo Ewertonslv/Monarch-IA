@@ -1,12 +1,14 @@
 import json
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from core.task import Task
+
+from agents.base import OPUS_MODEL, SONNET_MODEL
 from agents.implementer import ImplementerAgent
-from agents.testing import TestingAgent
 from agents.reviewer import ReviewerAgent
 from agents.security import SecurityAgent
-from agents.base import OPUS_MODEL, SONNET_MODEL
+from agents.testing import TestingAgent
+from core.task import Task
 
 
 def _msg(payload: dict) -> MagicMock:

@@ -1,9 +1,8 @@
 """Testes para modelos."""
 import pytest
-from pydantic import ValidationError
-
-from pdf_factory.models import BriefInput, DocumentSection, DocumentPlan
+from pdf_factory.models import BriefInput, DocumentPlan, DocumentSection
 from pdf_factory.pipeline import build_document_plan
+from pydantic import ValidationError
 
 
 def test_brief_input_valid():

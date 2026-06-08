@@ -1,5 +1,7 @@
-import pytest
 import asyncio
+
+import pytest
+
 from core.circuit_breaker import CircuitBreaker, CircuitBreakerError, CircuitState
 
 
