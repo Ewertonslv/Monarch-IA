@@ -1,12 +1,13 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from httpx import AsyncClient, ASGITransport
+
+import pytest
+from httpx import ASGITransport, AsyncClient
 
 
 @pytest.fixture
 async def client():
-    from interfaces.web.app import app, _db, _orchestrator
     import interfaces.web.app as web_module
+    from interfaces.web.app import app
 
     mock_db = AsyncMock()
     mock_orch = AsyncMock()
@@ -295,8 +296,12 @@ async def test_hub_project_detail_returns_404_when_project_missing(client):
 @pytest.mark.asyncio
 async def test_hub_project_detail_returns_aggregated_payload(client):
     ac, _, _ = client
+    # Endpoint aggregates, in order: project, execution_summary, implementation_summary,
+    # ideas, tasks, approvals, executions, metrics, roadmap_items.
     fetch_mock = AsyncMock(side_effect=[
         {"id": "project-1", "name": "Canal Dark"},
+        {"total": 3, "last_status": "done"},
+        {"implemented": True, "files": 12},
         [{"id": "idea-1", "title": "Ideia"}],
         [{"id": "task-1", "title": "Tarefa"}],
         [{"id": "approval-1", "title": "Aprovacao"}],
@@ -309,6 +314,8 @@ async def test_hub_project_detail_returns_aggregated_payload(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data["project"]["id"] == "project-1"
+    assert data["execution_summary"]["total"] == 3
+    assert data["implementation_summary"]["implemented"] is True
     assert data["ideas"][0]["id"] == "idea-1"
     assert data["tasks"][0]["id"] == "task-1"
     assert data["approvals"][0]["id"] == "approval-1"

@@ -5,7 +5,6 @@ import rich.console
 import rich.table
 import typer
 
-from tiktok_shop.models import ValidationPlan
 from tiktok_shop.pipeline import build_validation_plan, render_validation_plan
 
 app = typer.Typer(help="TikTok Shop — transforme candidatos em planos de validacao comercial.")

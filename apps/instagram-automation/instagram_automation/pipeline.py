@@ -4,7 +4,6 @@ import re
 
 from instagram_automation.models import ContentAngle, PublicationChecklist, QueueItem, ResearchInput
 
-
 DEFAULT_FORMATS = ["reel curto", "carrossel", "post de autoridade"]
 DEFAULT_REVIEW_NOTES = [
     "Validar se o conteudo respeita as politicas da plataforma.",

@@ -1,7 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from agents.discovery import DiscoveryAgent
+
 from agents.base import AgentResult
+from agents.discovery import DiscoveryAgent
 from core.task import Task
 
 
@@ -28,7 +30,7 @@ async def test_discovery_returns_result(agent):
     mock_message = MagicMock()
     mock_message.stop_reason = "end_turn"
     mock_message.content = [
-        MagicMock(type="text", text=f'{{"confidence": 0.92, "summary": "Build JWT login endpoint", "feature_type": "backend_api", "complexity": "medium", "affected_areas": ["auth", "users"], "acceptance_criteria": ["returns 200 on valid creds", "returns 401 on invalid"], "out_of_scope": [], "concerns": []}}')
+        MagicMock(type="text", text='{"confidence": 0.92, "summary": "Build JWT login endpoint", "feature_type": "backend_api", "complexity": "medium", "affected_areas": ["auth", "users"], "acceptance_criteria": ["returns 200 on valid creds", "returns 401 on invalid"], "out_of_scope": [], "concerns": []}')
     ]
 
     with patch.object(agent, "_call_claude", return_value=mock_message):

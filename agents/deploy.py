@@ -1,8 +1,7 @@
 import json
 import logging
-from typing import Any
 
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import SONNET_MODEL, BaseAgent
 from core.task import Task
 from tools.github_tools import GitHubTools
 
@@ -124,7 +123,7 @@ class DeployAgent(BaseAgent):
 
         task.deploy_report = result.output
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="deploy_config_complete",
             detail=(
                 f"type={result.output.get('project_type')} "

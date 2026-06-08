@@ -1,5 +1,10 @@
 from pdf_factory.models import BriefInput
-from pdf_factory.pipeline import build_document_plan, build_output_filename, render_markdown, slugify
+from pdf_factory.pipeline import (
+    build_document_plan,
+    build_output_filename,
+    render_markdown,
+    slugify,
+)
 
 
 def test_slugify_normalizes_title():

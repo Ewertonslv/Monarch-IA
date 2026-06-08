@@ -1,6 +1,5 @@
 """CLI para PDF Factory."""
 import json
-import sys
 from pathlib import Path
 
 import rich.console

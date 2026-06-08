@@ -1,7 +1,12 @@
 """Testes para pipeline do TikTok Shop."""
 from dataclasses import dataclass
 
-from tiktok_shop.pipeline import build_offer_angle, build_validation_plan, build_video_script, render_validation_plan
+from tiktok_shop.pipeline import (
+    build_offer_angle,
+    build_validation_plan,
+    build_video_script,
+    render_validation_plan,
+)
 
 
 @dataclass(slots=True)

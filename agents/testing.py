@@ -1,8 +1,7 @@
 import json
 import logging
-from typing import Any
 
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import SONNET_MODEL, BaseAgent
 from core.task import Task
 from tools.code_tools import CodeTools
 
@@ -50,7 +49,7 @@ class TestingAgent(BaseAgent):
         task.test_results = result.output
         all_passed = result.output.get("all_passed", False)
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="testing_complete",
             detail=f"all_passed={all_passed}",
         )

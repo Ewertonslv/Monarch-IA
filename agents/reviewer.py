@@ -1,8 +1,6 @@
-import json
 import logging
-from typing import Any
 
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import OPUS_MODEL, BaseAgent
 from core.task import Task
 from tools.github_tools import GitHubTools
 
@@ -36,7 +34,7 @@ Respond with a single JSON object:
 class ReviewerAgent(BaseAgent):
     name = "reviewer"
     display_name = "Helena - Revisão"
-    model = SONNET_MODEL
+    model = OPUS_MODEL
     system_prompt = _SYSTEM
 
     def __init__(self) -> None:
@@ -65,7 +63,7 @@ class ReviewerAgent(BaseAgent):
         task.review_report = result.output
         approved = result.output.get("approved", False)
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="review_complete",
             detail=f"approved={approved} quality={result.output.get('overall_quality')}",
         )

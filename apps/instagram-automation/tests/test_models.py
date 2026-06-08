@@ -1,5 +1,5 @@
 """Testes para modelos do Instagram Automation."""
-from instagram_automation.models import ContentAngle, QueueItem, ResearchInput
+from instagram_automation.models import QueueItem, ResearchInput
 from instagram_automation.pipeline import build_content_angles, choose_queue_item
 
 

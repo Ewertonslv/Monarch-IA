@@ -1,11 +1,13 @@
-import pytest
 from unittest.mock import MagicMock, patch
-from core.task import Task
-from agents.prioritization import PrioritizationAgent
+
+import pytest
+
 from agents.architecture import ArchitectureAgent
-from agents.planning import PlanningAgent
-from agents.devils_advocate import DevilsAdvocateAgent
 from agents.base import OPUS_MODEL, SONNET_MODEL
+from agents.devils_advocate import DevilsAdvocateAgent
+from agents.planning import PlanningAgent
+from agents.prioritization import PrioritizationAgent
+from core.task import Task
 
 
 def _mock_message(json_text: str) -> MagicMock:

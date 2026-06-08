@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import re
-import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -251,7 +250,7 @@ class BaseAgent(ABC):
         print(f"{'='*60}\n")
         if self._current_task:
             self._current_task.add_history(
-                agent=self.label,
+                agent=self.name,
                 action="asked_user",
                 detail=f"Q: {question[:80]} | A: {answer[:80]}",
             )
@@ -346,7 +345,7 @@ class BaseAgent(ABC):
             interactive = os.environ.get("MONARCH_INTERACTIVE", "0") == "1" or self._ask_user_fn is not None
             extra = [_ASK_USER_TOOL] if interactive else []
             all_tools = (self.tools or []) + extra
-            message = await self._call_claude_api(messages, all_tools or None)
+            message = await self._call_claude(messages, all_tools or None)
 
             while message.stop_reason == "tool_use":
                 message = await self._handle_tool_use(message, messages)
