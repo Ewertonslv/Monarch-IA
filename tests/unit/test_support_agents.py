@@ -1,10 +1,12 @@
 import json
-import pytest
 from unittest.mock import MagicMock, patch
-from core.task import Task
+
+import pytest
+
+from agents.base import HAIKU_MODEL
 from agents.documentation import DocumentationAgent
 from agents.observability import ObservabilityAgent
-from agents.base import HAIKU_MODEL
+from core.task import Task
 
 
 def _msg(payload: dict) -> MagicMock:

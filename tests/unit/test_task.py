@@ -1,4 +1,4 @@
-from core.task import HistoryEntry, Task, TaskStatus
+from core.task import Task, TaskStatus
 
 
 def test_task_creation():

@@ -480,11 +480,11 @@ def _print_task_summary(task) -> None:
 
 
 async def _run_plan_only(raw_input: str, mode: str = "ideation") -> None:
-    from config import config
     from agents.architecture import ArchitectureAgent
     from agents.discovery import DiscoveryAgent
     from agents.planning import PlanningAgent
     from agents.prioritization import PrioritizationAgent
+    from config import config
     from core.task import Task, TaskMode
     from storage.database import Database
 
@@ -518,8 +518,8 @@ async def _run_plan_only(raw_input: str, mode: str = "ideation") -> None:
 
 async def _run_cli(raw_input: str, verbose: bool = True, mode: str = "execution") -> None:
     from config import config
-    from core.task import Task, TaskMode, TaskStatus
     from core.orchestrator import Orchestrator
+    from core.task import Task, TaskMode, TaskStatus
     from storage.database import Database
 
     db = Database(config.database_url)
@@ -774,7 +774,7 @@ def _build_cli_args(raw_input: str, base_cmd: list[str], app_dir: Path) -> list[
 
 
 def _run_local_command(cmd: list[str], cwd: Path) -> int:
-    print(f"\n[monarch] Routing to local command:")
+    print("\n[monarch] Routing to local command:")
     print(f"  {' '.join(cmd)}")
     print()
     result = subprocess.run(cmd, cwd=str(cwd))

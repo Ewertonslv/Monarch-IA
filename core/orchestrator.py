@@ -1,25 +1,26 @@
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Callable, Awaitable
+from typing import TYPE_CHECKING, Any
 
-from config import config
-from core.monarch_core_client import MonarchCoreClient
-from core.circuit_breaker import CircuitBreaker, CircuitBreakerError
-from core.task import Task, TaskMode, TaskStatus
-from storage.database import Database
-from agents.discovery import DiscoveryAgent
-from agents.prioritization import PrioritizationAgent
 from agents.architecture import ArchitectureAgent
-from agents.planning import PlanningAgent
+from agents.deploy import DeployAgent
 from agents.devils_advocate import DevilsAdvocateAgent
+from agents.discovery import DiscoveryAgent
+from agents.documentation import DocumentationAgent
 from agents.implementer import ImplementerAgent
-from agents.testing import TestingAgent
+from agents.observability import ObservabilityAgent
+from agents.planning import PlanningAgent
+from agents.prioritization import PrioritizationAgent
 from agents.reviewer import ReviewerAgent
 from agents.security import SecurityAgent
-from agents.documentation import DocumentationAgent
-from agents.observability import ObservabilityAgent
-from agents.deploy import DeployAgent
+from agents.testing import TestingAgent
+from config import config
+from core.circuit_breaker import CircuitBreaker, CircuitBreakerError
+from core.monarch_core_client import MonarchCoreClient
+from core.task import Task, TaskMode, TaskStatus
+from storage.database import Database
 from tools.github_tools import GitHubTools
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ class Orchestrator:
     ) -> None:
         self.db = db
         self._breakers: dict[str, CircuitBreaker] = {}
-        self._telegram: "TelegramBot | None" = None
+        self._telegram: TelegramBot | None = None
         self._core_client = MonarchCoreClient(
             base_url=config.monarch_core_api_url,
             project_slug=config.monarch_core_project_slug,
@@ -500,13 +501,13 @@ class Orchestrator:
     def _build_pr_body(self, task: Task) -> str:
         reqs = task.requirements or {}
         lines = [
-            f"## Summary",
+            "## Summary",
             f"{reqs.get('summary', task.raw_input)}",
             "",
-            f"## Complexity",
+            "## Complexity",
             f"`{reqs.get('complexity', 'unknown')}`",
             "",
-            f"## Affected Areas",
+            "## Affected Areas",
         ]
         for area in reqs.get("affected_areas", []):
             lines.append(f"- {area}")

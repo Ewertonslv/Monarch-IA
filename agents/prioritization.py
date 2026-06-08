@@ -1,4 +1,4 @@
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import SONNET_MODEL, BaseAgent
 from core.task import Task
 
 _SYSTEM = """You are the Prioritization Agent for Monarch AI.
@@ -38,7 +38,7 @@ class PrioritizationAgent(BaseAgent):
         result = await super().run(task)
         task.priority = result.output.get("priority", "medium")
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="prioritization_complete",
             detail=f"priority={task.priority} score={result.output.get('priority_score')}",
         )

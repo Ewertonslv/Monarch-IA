@@ -18,9 +18,11 @@ apps/*/output/
 
 # Legacy directories (use canonical paths in apps/)
 whatsapp_notion_bot/
-interfaces/web/
 deploy/
 monarch_phase1/
+
+# Local CI verification venv (not committed)
+.venv-ci/
 
 # Binary/docs
 *.docx

@@ -1,7 +1,11 @@
 import pytest
-
 from canal_dark.models import ChannelBrief
-from canal_dark.pipeline import build_script_draft, build_topic_backlog, choose_priority_topic, render_script
+from canal_dark.pipeline import (
+    build_script_draft,
+    build_topic_backlog,
+    choose_priority_topic,
+    render_script,
+)
 
 
 def test_build_topic_backlog_creates_one_topic_per_theme():

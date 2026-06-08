@@ -9,3 +9,5 @@ os.environ.setdefault("TELEGRAM_BOT_TOKEN", "123456:TEST-TOKEN")
 os.environ.setdefault("TELEGRAM_CHAT_ID", "123456789")
 os.environ.setdefault("MONARCH_CORE_API_URL", "")
 os.environ.setdefault("MONARCH_CORE_PROJECT_SLUG", "monarch-ai")
+# Hub write endpoints are exercised by the web tests; production stays read-only by default.
+os.environ.setdefault("HUB_READ_ONLY", "false")

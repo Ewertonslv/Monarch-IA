@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
-from app.models.approval import Approval
 from app.db.session import AsyncSessionLocal
+from app.models.approval import Approval
 from app.models.business_unit import BusinessUnit
 from app.models.project import Project
 from app.models.project_metric import ProjectMetric
