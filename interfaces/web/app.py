@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 import re
 import time
 from collections import defaultdict, deque
@@ -10,16 +11,14 @@ from urllib.parse import urlencode
 
 import httpx
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from config import config
 from core.orchestrator import Orchestrator
-from core.task import Task, TaskStatus
+from core.task import Task
 from storage.database import Database
 
 logger = logging.getLogger(__name__)
@@ -89,7 +88,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Monarch AI", lifespan=lifespan)
 
-import os
 _templates_dir = os.path.join(os.path.dirname(__file__), "templates")
 templates = Jinja2Templates(directory=_templates_dir)
 
