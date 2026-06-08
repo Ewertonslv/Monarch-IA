@@ -1,4 +1,4 @@
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import OPUS_MODEL, BaseAgent
 from core.task import Task
 
 _SYSTEM = """You are the Discovery Agent for Monarch AI — a multi-agent system that
@@ -24,7 +24,7 @@ Always respond with a single JSON object (no markdown code fences) with these fi
 class DiscoveryAgent(BaseAgent):
     name = "discovery"
     display_name = "Alice - Descoberta"
-    model = SONNET_MODEL
+    model = OPUS_MODEL
     system_prompt = _SYSTEM
 
     async def build_user_message(self, task: Task) -> str:
@@ -38,7 +38,7 @@ class DiscoveryAgent(BaseAgent):
         # Persist the structured requirements back onto the task
         task.requirements = result.output
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="discovery_complete",
             detail=f"complexity={result.output.get('complexity')} confidence={result.confidence:.2f}",
         )

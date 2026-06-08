@@ -54,7 +54,17 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
-ignore = ["E501"]
+# E501: line length is advisory; UP042: keep (str, Enum) — StrEnum migration is behavior-sensitive.
+ignore = ["E501", "UP042"]
+
+[tool.ruff.lint.per-file-ignores]
+# Unused locals (e.g. `result = await agent.run(...)`) are acceptable for test readability.
+"tests/**" = ["F841"]
+# conftest sets required env vars before importing modules that read them.
+"**/conftest.py" = ["E402"]
+# CLI groups deferred stdlib imports by section; some display-only locals are unused.
+"interfaces/cli.py" = ["E402", "F841"]
+"apps/pdf-factory/**" = ["F841"]
 
 [tool.mypy]
 python_version = "3.12"

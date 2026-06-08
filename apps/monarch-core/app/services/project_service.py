@@ -11,7 +11,6 @@ from app.models.roadmap_item import RoadmapItem
 from app.models.task import Task
 from app.schemas.project import ProjectCreate, ProjectUpdate
 
-
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
 IMPLEMENTATION_BLUEPRINTS: dict[str, dict[str, object]] = {
@@ -19,7 +18,7 @@ IMPLEMENTATION_BLUEPRINTS: dict[str, dict[str, object]] = {
         "canonical_path": ".",
         "deliverable": "Hub, orchestracao multiagente e governanca do portfolio.",
         "module_labels": ["hub", "monarch-core", "monarch-web", "orchestrator"],
-        "test_targets": ["tests", "apps/monarch-core", "apps/monarch-web"],
+        "test_targets": ["tests", "apps/monarch-core", "interfaces/web"],
     },
     "whatsapp-notion-bot": {
         "canonical_path": "apps/whatsapp-notion-bot",

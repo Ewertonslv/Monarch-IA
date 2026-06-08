@@ -3,7 +3,7 @@ from dataclasses import asdict
 from datetime import datetime
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from core.task import HistoryEntry, Task, TaskMode, TaskStatus
 from storage.models import Base, TaskRecord

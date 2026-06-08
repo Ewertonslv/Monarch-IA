@@ -1,8 +1,10 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from agents.base import AgentResult
 from core.orchestrator import Orchestrator
 from core.task import Task, TaskMode, TaskStatus
-from agents.base import AgentResult
 
 
 def _result(output: dict = None, confidence: float = 0.9) -> AgentResult:

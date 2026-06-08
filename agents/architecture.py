@@ -1,4 +1,4 @@
-from agents.base import BaseAgent, SONNET_MODEL
+from agents.base import OPUS_MODEL, BaseAgent
 from core.task import Task
 
 _SYSTEM = """You are the Architecture Agent for Monarch AI.
@@ -26,7 +26,7 @@ Respond with a single JSON object:
 class ArchitectureAgent(BaseAgent):
     name = "architecture"
     display_name = "Carla - Arquitetura"
-    model = SONNET_MODEL
+    model = OPUS_MODEL
     system_prompt = _SYSTEM
 
     async def build_user_message(self, task: Task) -> str:
@@ -43,7 +43,7 @@ class ArchitectureAgent(BaseAgent):
         result = await super().run(task)
         task.architecture = result.output
         task.add_history(
-            agent=self.label,
+            agent=self.name,
             action="architecture_complete",
             detail=f"new_files={len(result.output.get('new_files', []))} modified={len(result.output.get('modified_files', []))}",
         )

@@ -1,8 +1,7 @@
 """Add tasks and approvals tables."""
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 revision = "0002_tasks_and_approvals"
 down_revision = "0001_initial_schema"

@@ -1,6 +1,6 @@
 """Testes para modelos do Canal Dark."""
 from canal_dark.models import ChannelBrief, ScriptDraft, TopicIdea
-from canal_dark.pipeline import build_topic_backlog, choose_priority_topic, build_script_draft
+from canal_dark.pipeline import build_script_draft, build_topic_backlog, choose_priority_topic
 
 
 def test_channel_brief_defaults():

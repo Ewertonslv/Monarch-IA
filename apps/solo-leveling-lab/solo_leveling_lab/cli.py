@@ -6,7 +6,11 @@ import rich.table
 import typer
 
 from solo_leveling_lab.models import LabBrief
-from solo_leveling_lab.pipeline import build_experiment, build_experiment_cycle, render_experiment_plan
+from solo_leveling_lab.pipeline import (
+    build_experiment,
+    build_experiment_cycle,
+    render_experiment_plan,
+)
 
 app = typer.Typer(help="Solo Leveling Lab — experimente, produza e registre aprendizados.")
 console = rich.console.Console()
@@ -43,7 +47,7 @@ def experiment(
     for item in experiment.artifact_outline:
         console.print(f"  - {item}")
 
-    console.print(f"\n[bold]Proximo ciclo:[/bold]")
+    console.print("\n[bold]Proximo ciclo:[/bold]")
     for i, step in enumerate(cycle.next_steps, 1):
         console.print(f"  {i}. {step}")
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import Select, select
@@ -65,7 +65,7 @@ async def _decide_approval(
     approval.status = decision
     approval.decision = decision
     approval.decided_by = decided_by
-    approval.decided_at = datetime.now(timezone.utc)
+    approval.decided_at = datetime.now(UTC)
     await db.commit()
     await db.refresh(approval)
     return approval
