@@ -12,3 +12,6 @@ htmlcov/
 *.db-shm
 *.db-wal
 /node_modules/
+
+# clone aninhado acidental
+landing-pages-monorepo-cloned/
