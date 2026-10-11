@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+import secrets
 import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
@@ -10,7 +11,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -68,6 +69,23 @@ def _assert_hub_write_allowed() -> None:
         )
 
 
+def require_panel_token(request: Request) -> None:
+    """Reject write requests without a valid bearer token when MONARCH_PANEL_TOKEN is set."""
+    expected = config.panel_token
+    if not expected:
+        return
+    scheme, _, value = request.headers.get("authorization", "").partition(" ")
+    if scheme.lower() != "bearer" or not secrets.compare_digest(value.strip(), expected):
+        raise HTTPException(
+            status_code=401,
+            detail="Missing or invalid panel token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+_WRITE_AUTH = [Depends(require_panel_token)]
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _db, _orchestrator
@@ -79,6 +97,10 @@ async def lifespan(app: FastAPI):
         "Monarch AI web interface ready (hub_read_only=%s)",
         config.hub_read_only,
     )
+    if not config.panel_token:
+        logger.warning(
+            "MONARCH_PANEL_TOKEN is not set: write endpoints accept unauthenticated requests"
+        )
     yield
     if _orchestrator:
         await _orchestrator.aclose()
@@ -179,7 +201,7 @@ class HubTaskUpdateRequest(BaseModel):
 
 
 class HubApprovalDecisionRequest(BaseModel):
-    decided_by: str = "Ewerton Viggo"
+    decided_by: str = "operator"
 
 
 class BusinessUnitCreateRequest(BaseModel):
@@ -482,7 +504,7 @@ async def index(request: Request):
     return templates.TemplateResponse(request=request, name="hub.html")
 
 
-@app.post("/tasks")
+@app.post("/tasks", dependencies=_WRITE_AUTH)
 async def create_task(body: TaskRequest):
     _assert_hub_write_allowed()
     task = Task(raw_input=body.raw_input)
@@ -506,7 +528,7 @@ async def get_task(task_id: str):
     return _task_to_dict(task)
 
 
-@app.post("/tasks/{task_id}/approve")
+@app.post("/tasks/{task_id}/approve", dependencies=_WRITE_AUTH)
 async def approve_task(task_id: str):
     _assert_hub_write_allowed()
     assert _orchestrator is not None
@@ -514,7 +536,7 @@ async def approve_task(task_id: str):
     return {"task_id": task_id, "action": "approved"}
 
 
-@app.post("/tasks/{task_id}/reject")
+@app.post("/tasks/{task_id}/reject", dependencies=_WRITE_AUTH)
 async def reject_task(task_id: str):
     _assert_hub_write_allowed()
     assert _orchestrator is not None
@@ -589,7 +611,7 @@ async def hub_business_units():
     return payload or []
 
 
-@app.post("/hub/business-units")
+@app.post("/hub/business-units", dependencies=_WRITE_AUTH)
 async def hub_create_business_unit(body: BusinessUnitCreateRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/business-units", body.model_dump(exclude_none=True))
@@ -598,7 +620,7 @@ async def hub_create_business_unit(body: BusinessUnitCreateRequest):
     return result
 
 
-@app.patch("/hub/business-units/{business_unit_id}")
+@app.patch("/hub/business-units/{business_unit_id}", dependencies=_WRITE_AUTH)
 async def hub_update_business_unit(business_unit_id: str, body: BusinessUnitUpdateRequest):
     _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
@@ -700,7 +722,7 @@ async def hub_project_detail(project_id: str):
     }
 
 
-@app.patch("/hub/projects/{project_id}")
+@app.patch("/hub/projects/{project_id}", dependencies=_WRITE_AUTH)
 async def hub_project_update(project_id: str, body: ProjectUpdateRequest):
     _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
@@ -729,7 +751,7 @@ async def hub_ideas(status: str | None = None, classification: str | None = None
     return payload or []
 
 
-@app.post("/hub/ideas")
+@app.post("/hub/ideas", dependencies=_WRITE_AUTH)
 async def hub_create_idea(body: IdeaCreateRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/ideas", body.model_dump(exclude_none=True))
@@ -738,7 +760,7 @@ async def hub_create_idea(body: IdeaCreateRequest):
     return result
 
 
-@app.patch("/hub/ideas/{idea_id}")
+@app.patch("/hub/ideas/{idea_id}", dependencies=_WRITE_AUTH)
 async def hub_update_idea(idea_id: str, body: IdeaUpdateRequest):
     _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
@@ -751,7 +773,7 @@ async def hub_update_idea(idea_id: str, body: IdeaUpdateRequest):
     return result
 
 
-@app.post("/hub/ideas/{idea_id}/convert-to-project")
+@app.post("/hub/ideas/{idea_id}/convert-to-project", dependencies=_WRITE_AUTH)
 async def hub_convert_idea_to_project(idea_id: str, body: IdeaConvertRequest):
     _assert_hub_write_allowed()
     idea = await _fetch_monarch_core_json(f"/api/ideas/{idea_id}")
@@ -800,7 +822,7 @@ async def hub_convert_idea_to_project(idea_id: str, body: IdeaConvertRequest):
     return {"project": project, "idea": idea_update, "created_tasks": created_tasks}
 
 
-@app.post("/hub/ideas/{idea_id}/convert-to-task")
+@app.post("/hub/ideas/{idea_id}/convert-to-task", dependencies=_WRITE_AUTH)
 async def hub_convert_idea_to_task(idea_id: str, body: IdeaConvertToTaskRequest):
     _assert_hub_write_allowed()
     idea = await _fetch_monarch_core_json(f"/api/ideas/{idea_id}")
@@ -858,7 +880,7 @@ async def hub_metrics(project_id: str | None = None, metric_name: str | None = N
     return payload or []
 
 
-@app.post("/hub/metrics")
+@app.post("/hub/metrics", dependencies=_WRITE_AUTH)
 async def hub_create_metric(body: ProjectMetricCreateRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/project-metrics", body.model_dump(exclude_none=True))
@@ -883,7 +905,7 @@ async def hub_agents(status: str | None = None, pipeline_name: str | None = None
     return payload or []
 
 
-@app.post("/hub/agents")
+@app.post("/hub/agents", dependencies=_WRITE_AUTH)
 async def hub_create_agent(body: AgentProfileCreateRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/agent-profiles", body.model_dump(exclude_none=True))
@@ -892,7 +914,7 @@ async def hub_create_agent(body: AgentProfileCreateRequest):
     return result
 
 
-@app.patch("/hub/agents/{agent_id}")
+@app.patch("/hub/agents/{agent_id}", dependencies=_WRITE_AUTH)
 async def hub_update_agent(agent_id: str, body: AgentProfileUpdateRequest):
     _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
@@ -927,7 +949,7 @@ async def hub_roadmap_items(
     return payload or []
 
 
-@app.post("/hub/roadmap-items")
+@app.post("/hub/roadmap-items", dependencies=_WRITE_AUTH)
 async def hub_create_roadmap_item(body: RoadmapItemCreateRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/roadmap-items", body.model_dump(exclude_none=True))
@@ -936,7 +958,7 @@ async def hub_create_roadmap_item(body: RoadmapItemCreateRequest):
     return result
 
 
-@app.patch("/hub/roadmap-items/{item_id}")
+@app.patch("/hub/roadmap-items/{item_id}", dependencies=_WRITE_AUTH)
 async def hub_update_roadmap_item(item_id: str, body: RoadmapItemUpdateRequest):
     _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
@@ -971,7 +993,7 @@ async def hub_tasks(
     return payload or []
 
 
-@app.post("/hub/tasks")
+@app.post("/hub/tasks", dependencies=_WRITE_AUTH)
 async def hub_create_task(body: HubTaskCreateRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json("/api/tasks", body.model_dump(exclude_none=True))
@@ -980,7 +1002,7 @@ async def hub_create_task(body: HubTaskCreateRequest):
     return result
 
 
-@app.patch("/hub/tasks/{task_id}")
+@app.patch("/hub/tasks/{task_id}", dependencies=_WRITE_AUTH)
 async def hub_update_task(task_id: str, body: HubTaskUpdateRequest):
     _assert_hub_write_allowed()
     payload = body.model_dump(exclude_none=True)
@@ -1009,7 +1031,7 @@ async def hub_approvals(status: str | None = None, project_id: str | None = None
     return payload or []
 
 
-@app.post("/hub/approvals/{approval_id}/approve")
+@app.post("/hub/approvals/{approval_id}/approve", dependencies=_WRITE_AUTH)
 async def hub_approve_approval(approval_id: str, body: HubApprovalDecisionRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json(f"/api/approvals/{approval_id}/approve", body.model_dump())
@@ -1018,7 +1040,7 @@ async def hub_approve_approval(approval_id: str, body: HubApprovalDecisionReques
     return result
 
 
-@app.post("/hub/approvals/{approval_id}/reject")
+@app.post("/hub/approvals/{approval_id}/reject", dependencies=_WRITE_AUTH)
 async def hub_reject_approval(approval_id: str, body: HubApprovalDecisionRequest):
     _assert_hub_write_allowed()
     result = await _post_monarch_core_json(f"/api/approvals/{approval_id}/reject", body.model_dump())
