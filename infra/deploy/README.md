@@ -41,6 +41,7 @@ Preencha:
   - `MONARCH_DB_PASSWORD`
 - `infra/deploy/env/monarch.env`
   - credenciais do Monarch AI
+  - `MONARCH_PANEL_TOKEN` (recomendado em producao: protege os endpoints de escrita do painel)
 - `infra/deploy/env/monarch-core.env`
   - configuracao do Monarch Core
   - `MONARCH_CORE_API_KEY` (recomendado em producao)

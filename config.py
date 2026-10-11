@@ -31,6 +31,8 @@ class Config(BaseSettings):
     web_secret_key: str = Field(
         default="change-me-in-production", validation_alias="WEB_SECRET_KEY"
     )
+    # When set, write endpoints of the web panel require "Authorization: Bearer <token>"
+    panel_token: str | None = Field(default=None, validation_alias="MONARCH_PANEL_TOKEN")
     monarch_core_api_url: str | None = Field(
         default=None, validation_alias="MONARCH_CORE_API_URL"
     )

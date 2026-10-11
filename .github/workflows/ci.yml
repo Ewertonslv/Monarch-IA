@@ -26,3 +26,10 @@ jobs:
 
       - name: Test (pytest)
         run: pytest tests/
+
+      - name: Test apps (pytest)
+        run: |
+          for app in achadinhos canal-dark instagram-automation pdf-factory solo-leveling-lab tiktok-shop; do
+            (cd "apps/$app" && python -m pytest tests) || exit 1
+          done
+          (cd apps/whatsapp-notion-bot && python -m pytest whatsapp_notion_bot/tests)

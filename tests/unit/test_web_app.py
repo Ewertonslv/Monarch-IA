@@ -821,3 +821,48 @@ async def test_hub_roadmap_items_returns_core_payload(client):
         resp = await ac.get("/hub/roadmap-items", params={"project_id": "project-1", "phase": "mvp"})
     assert resp.status_code == 200
     assert resp.json() == payload
+
+
+@pytest.mark.asyncio
+async def test_write_endpoint_rejects_request_without_panel_token(client, monkeypatch):
+    from config import config
+
+    ac, _, mock_orch = client
+    monkeypatch.setattr(config, "panel_token", "secret-token")
+    resp = await ac.post("/tasks/monarch-abc/approve")
+    assert resp.status_code == 401
+    assert resp.headers["WWW-Authenticate"] == "Bearer"
+    mock_orch.approve_task.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_write_endpoint_rejects_wrong_panel_token(client, monkeypatch):
+    from config import config
+
+    ac, _, _ = client
+    monkeypatch.setattr(config, "panel_token", "secret-token")
+    resp = await ac.post("/tasks", json={"raw_input": "x"}, headers={"Authorization": "Bearer nope"})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_write_endpoint_accepts_valid_panel_token(client, monkeypatch):
+    from config import config
+
+    ac, _, mock_orch = client
+    monkeypatch.setattr(config, "panel_token", "secret-token")
+    resp = await ac.post(
+        "/tasks/monarch-abc/approve", headers={"Authorization": "Bearer secret-token"}
+    )
+    assert resp.status_code == 200
+    mock_orch.approve_task.assert_awaited_once_with("monarch-abc")
+
+
+@pytest.mark.asyncio
+async def test_read_endpoint_does_not_require_panel_token(client, monkeypatch):
+    from config import config
+
+    ac, _, _ = client
+    monkeypatch.setattr(config, "panel_token", "secret-token")
+    resp = await ac.get("/tasks")
+    assert resp.status_code == 200

@@ -7,7 +7,6 @@ Pastas canonicas de aplicacoes do ecossistema.
 | App | Status | Descricao |
 |---|---|---|
 | `monarch-core` | **FUNCIONAL** | API FastAPI + SQLAlchemy com 8 entidades, migrations, Docker |
-| `monarch-web` | **PARCIAL** | Painel FastAPI que consome monarch-core |
 | `monarch-runtime` | **WRAPPER** | Wrapper para entrypoints da raiz |
 | `pdf-factory` | **COMERCIAL** | Pipeline CLI de briefs para MD/HTML/PDF com testes |
 | `achadinhos` | **COMERCIAL** | Pipeline CLI de discovery e scoring de produtos |

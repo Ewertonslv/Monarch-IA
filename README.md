@@ -94,7 +94,7 @@ The pipeline runs in four layers with two human checkpoints:
 **Bot** python-telegram-bot ·
 **Data** SQLAlchemy (async) + aiosqlite / PostgreSQL ·
 **Config** Pydantic Settings ·
-**Tooling** pytest · ruff · mypy (strict) · bandit ·
+**Tooling** pytest · ruff ·
 **Packaging** Docker + docker-compose
 
 ## Getting started
@@ -102,7 +102,8 @@ The pipeline runs in four layers with two human checkpoints:
 ### Prerequisites
 - Python 3.12+
 - An Anthropic API key ([console.anthropic.com](https://console.anthropic.com/))
-- (Optional) a Telegram bot token and a GitHub token
+- A Telegram bot token and chat ID (the config requires them even if polling is disabled)
+- (Optional) a GitHub token
 
 ### Run locally
 
@@ -134,6 +135,15 @@ docker compose up --build
 The full compose stack includes PostgreSQL, the orchestrator, the core API, and an Nginx
 reverse proxy.
 
+### Protecting the panel in production
+
+Nginx publishes the web panel on `/` with no login. Two settings keep it safe:
+
+- `HUB_READ_ONLY=true` (the default) blocks every POST/PATCH on `/tasks*` and `/hub/*`.
+- `MONARCH_PANEL_TOKEN=<random string>` makes every write endpoint require
+  `Authorization: Bearer <token>`. Set it before you turn `HUB_READ_ONLY` off.
+  When it is empty the app logs a warning at startup and accepts writes from anyone.
+
 ## Configuration
 
 All configuration is via environment variables (loaded from `.env`). See
@@ -147,23 +157,27 @@ All configuration is via environment variables (loaded from `.env`). See
 | `IMPLEMENTER_MODEL` | — | Override the model used by the implementer agent |
 | `LOCAL_MODE` | — | Route agent calls through the Claude CLI instead of API credits |
 | `DATABASE_URL` | — | Defaults to local SQLite; set to PostgreSQL for production |
+| `HUB_READ_ONLY` | — | Defaults to `true`; blocks write endpoints on the web panel |
+| `MONARCH_PANEL_TOKEN` | — | Bearer token required by write endpoints when set (see deploy section) |
 
 ## Testing
 
 ```bash
-pytest                 # run the test suite
-ruff check .           # lint
-mypy .                 # static type checking (strict)
-bandit -r .            # security scan
+pytest tests/          # core test suite (what CI runs)
+ruff check .           # lint (also in CI)
 ```
+
+Each app under `apps/` has its own suite; CI runs them from inside each app directory
+(`cd apps/<app> && python -m pytest tests`). `mypy` and `bandit` are installed with the dev
+extras because the testing and security agents call them, but they are not CI gates.
 
 ## Project structure
 
 ```
 agents/        12 pipeline agents (discovery, architecture, implementer, …)
 core/          orchestrator, task model, circuit breaker
-interfaces/    CLI and Telegram bot
-apps/          web dashboard, core API, and incubated sub-projects
+interfaces/    CLI, web dashboard, and Telegram bot
+apps/          core API and incubated sub-projects
 storage/       async database layer (SQLAlchemy)
 tools/         GitHub and filesystem integrations
 tests/         unit + integration tests
@@ -172,4 +186,4 @@ docs/          design notes and operator context
 
 ## License
 
-See repository for license details.
+MIT. See [LICENSE](LICENSE).
